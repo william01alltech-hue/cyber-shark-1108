@@ -972,15 +972,19 @@ class SceneManager {
     requestAnimationFrame(fallLoop);
   }
 
-  // 讓掉在地上的蘋果可供玩家「拿起」與「餵食」
+  // 讓掉在地上的蘋果可供玩家「拿起」與「餵食」(支援手機觸控拖拽與一鍵點擊餵食)
   makeAppleInteractable(apple, viewport) {
     let isDragging = false;
     let hasSaidQuote = false;
+    apple.style.touchAction = 'none';
 
     const onPointerDown = (e) => {
       e.stopPropagation();
       isDragging = true;
       apple.classList.add('picked-up');
+      try {
+        apple.setPointerCapture(e.pointerId);
+      } catch (err) {}
 
       // 玩家拿起蘋果的瞬間：先說第三句「對對就是那個」，緊接著說第四句「可以給我嗎？」！
       if (!hasSaidQuote) {
@@ -999,8 +1003,8 @@ class SceneManager {
     const onPointerMove = (e) => {
       if (!isDragging) return;
       const vpRect = viewport.getBoundingClientRect();
-      const curX = e.clientX - vpRect.left - 29;
-      const curY = e.clientY - vpRect.top - 29;
+      const curX = e.clientX - vpRect.left - (apple.offsetWidth / 2 || 29);
+      const curY = e.clientY - vpRect.top - (apple.offsetHeight / 2 || 29);
       apple.style.left = `${curX}px`;
       apple.style.top = `${curY}px`;
     };
@@ -1009,6 +1013,9 @@ class SceneManager {
       if (!isDragging) return;
       isDragging = false;
       apple.classList.remove('picked-up');
+      try {
+        apple.releasePointerCapture(e.pointerId);
+      } catch (err) {}
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
 
@@ -1016,12 +1023,16 @@ class SceneManager {
       const curX = e.clientX - vpRect.left;
       const curY = e.clientY - vpRect.top;
 
-      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃)
+      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃，適應手機與桌面任何比例)
       const sharkCenterX = vpRect.width * 0.48;
       const sharkCenterY = vpRect.height * 0.60;
       const dist = Math.hypot(curX - sharkCenterX, curY - sharkCenterY);
+      const hitRadius = Math.max(130, vpRect.width * 0.32);
 
-      if (dist < 135) {
+      const inSharkArea = (curX >= vpRect.width * 0.22 && curX <= vpRect.width * 0.78 &&
+                           curY >= vpRect.height * 0.25 && curY <= vpRect.height * 0.78);
+
+      if (dist < hitRadius || inSharkArea) {
         // 餵食成功
         apple.remove();
         this.sharkEatApple();
@@ -1029,6 +1040,19 @@ class SceneManager {
     };
 
     apple.addEventListener('pointerdown', onPointerDown);
+
+    // 手機點擊小鯊魚時，若有已掉落的蘋果，也觸發餵食
+    const roomShark = document.getElementById('room-shark');
+    if (roomShark && !roomShark._hasAppleFeedListener) {
+      roomShark._hasAppleFeedListener = true;
+      roomShark.addEventListener('click', () => {
+        const existingApple = document.querySelector('.falling-apple');
+        if (existingApple) {
+          existingApple.remove();
+          this.sharkEatApple();
+        }
+      });
+    }
   }
 
   // 鯊魚吃掉蘋果的反應：只要把嘴巴張開一點點吃下，無多餘特效
