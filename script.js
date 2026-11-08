@@ -403,7 +403,8 @@ class SceneManager {
     document.getElementById('txt-btn-settings').textContent = dict.btnSettings;
     document.getElementById('txt-btn-lang').textContent = dict.btnLang;
     document.getElementById('txt-btn-replay').textContent = dict.btnReplay;
-    document.getElementById('btn-back-menu').textContent = dict.btnBackMenu;
+    const btnBack = document.getElementById('btn-back-menu');
+    if (btnBack) btnBack.textContent = dict.btnBackMenu;
 
     // 房間台詞
     const txtSpeech = document.getElementById('txt-shark-speech');
@@ -754,13 +755,15 @@ class SceneManager {
       });
     }
 
-    // 開啟錄音窗 (預設聚焦在第四句「可以給我嗎？」)
-    btnOpen.addEventListener('click', () => {
-      this.sfx.playClickSound();
-      this.currentVoiceId = 'give_me'; // 方便立刻錄製第四句
-      modal.classList.remove('hidden');
-      updateTabUI();
-    });
+    // 開啟錄音窗 (若存在時綁定)
+    if (btnOpen) {
+      btnOpen.addEventListener('click', () => {
+        this.sfx.playClickSound();
+        this.currentVoiceId = 'give_me';
+        modal.classList.remove('hidden');
+        updateTabUI();
+      });
+    }
 
     // 關閉錄音窗
     btnClose.addEventListener('click', () => {
