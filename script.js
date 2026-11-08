@@ -926,7 +926,7 @@ class SceneManager {
     }
   }
 
-  // 掉落蘋果的物理動畫邏輯 (垂直向下掉落，由玩家拿起並觸發「對對就是那個」)
+  // 掉落蘋果的物理動畫邏輯 (垂直向下掉落，由玩家拿起或點擊並觸發「對對就是那個」)
   dropAppleFromButton() {
     const container = document.getElementById('food-drop-container');
     const viewport = document.querySelector('.room-viewport');
@@ -940,19 +940,29 @@ class SceneManager {
 
     const vpRect = viewport.getBoundingClientRect();
 
-    // 垂直在左側偏中上方掉落 (x ~ 18%, y ~ 20%)，垂直降落至地板 (y ~ 65%)
-    let posX = vpRect.width * 0.18;
-    let posY = vpRect.height * 0.20;
+    // 垂直在左側偏中開闊木地板掉落 (x ~ 28%)，避開邊界與按鈕，居於坐墊前方
+    let posX = Math.round(vpRect.width * 0.28);
+    let posY = Math.round(vpRect.height * 0.12);
 
     apple.style.left = `${posX}px`;
     apple.style.top = `${posY}px`;
     container.appendChild(apple);
 
+    // 動態計算安全著陸地板高度，確保完全落在底部對話框上方至少 20px 的開闊木地板上，絕對不被對話框擋住！
+    const dialog = document.querySelector('.room-bottom-dialog');
+    const appleHeight = 52;
+    let safeFloorY = vpRect.height * 0.58;
+    if (dialog) {
+      const dialogRect = dialog.getBoundingClientRect();
+      const dialogTopInVp = dialogRect.top - vpRect.top;
+      // 預留至少 20px 充足空隙，讓蘋果整顆完整飄浮在地板上，清清楚楚絕不重疊！
+      safeFloorY = Math.min(safeFloorY, dialogTopInVp - appleHeight - 20);
+    }
+    const floorY = Math.max(vpRect.height * 0.42, safeFloorY);
+
     // 垂直掉落參數 (vx = 0 嚴格垂直下墜)
     let vy = 1.2;
-    const gravity = 0.58;
-    const floorY = vpRect.height * 0.65; // 地板高度，剛好在底部「給它吃蘋果吧」對話框上方
-
+    const gravity = 0.62;
     let hasLanded = false;
     let bounceCount = 0;
 
@@ -983,15 +993,19 @@ class SceneManager {
     requestAnimationFrame(fallLoop);
   }
 
-  // 讓掉在地上的蘋果可供玩家「拿起」與「餵食」(支援手機觸控拖拽與一鍵點擊餵食)
+  // 讓掉在地上的蘋果可供玩家「拿起」與「餵食」(支援手機觸控拖拽、點擊餵食與點擊小鯊魚餵食)
   makeAppleInteractable(apple, viewport) {
     let isDragging = false;
     let hasSaidQuote = false;
+    let startPointerX = 0;
+    let startPointerY = 0;
     apple.style.touchAction = 'none';
 
     const onPointerDown = (e) => {
       e.stopPropagation();
       isDragging = true;
+      startPointerX = e.clientX;
+      startPointerY = e.clientY;
       apple.classList.add('picked-up');
       try {
         apple.setPointerCapture(e.pointerId);
@@ -1014,8 +1028,8 @@ class SceneManager {
     const onPointerMove = (e) => {
       if (!isDragging) return;
       const vpRect = viewport.getBoundingClientRect();
-      const curX = e.clientX - vpRect.left - (apple.offsetWidth / 2 || 29);
-      const curY = e.clientY - vpRect.top - (apple.offsetHeight / 2 || 29);
+      const curX = e.clientX - vpRect.left - (apple.offsetWidth / 2 || 26);
+      const curY = e.clientY - vpRect.top - (apple.offsetHeight / 2 || 26);
       apple.style.left = `${curX}px`;
       apple.style.top = `${curY}px`;
     };
@@ -1034,14 +1048,28 @@ class SceneManager {
       const curX = e.clientX - vpRect.left;
       const curY = e.clientY - vpRect.top;
 
-      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃，適應手機與桌面任何比例)
-      const sharkCenterX = vpRect.width * 0.48;
-      const sharkCenterY = vpRect.height * 0.60;
-      const dist = Math.hypot(curX - sharkCenterX, curY - sharkCenterY);
-      const hitRadius = Math.max(130, vpRect.width * 0.32);
+      // 若只是輕點蘋果（位移小於 14px），也直接觸發順暢餵食動效，對手機直式操作極度友善！
+      const distMoved = Math.hypot(e.clientX - startPointerX, e.clientY - startPointerY);
+      if (distMoved < 14) {
+        apple.style.transition = 'all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        apple.style.left = `${vpRect.width * 0.44}px`;
+        apple.style.top = `${vpRect.height * 0.46}px`;
+        apple.style.transform = 'scale(0.85)';
+        setTimeout(() => {
+          apple.remove();
+          this.sharkEatApple();
+        }, 220);
+        return;
+      }
 
-      const inSharkArea = (curX >= vpRect.width * 0.22 && curX <= vpRect.width * 0.78 &&
-                           curY >= vpRect.height * 0.25 && curY <= vpRect.height * 0.78);
+      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃，適應手機直式與桌面任何比例)
+      const sharkCenterX = vpRect.width * 0.48;
+      const sharkCenterY = vpRect.height * 0.58;
+      const dist = Math.hypot(curX - sharkCenterX, curY - sharkCenterY);
+      const hitRadius = Math.max(130, vpRect.width * 0.35);
+
+      const inSharkArea = (curX >= vpRect.width * 0.18 && curX <= vpRect.width * 0.82 &&
+                           curY >= vpRect.height * 0.20 && curY <= vpRect.height * 0.80);
 
       if (dist < hitRadius || inSharkArea) {
         // 餵食成功
