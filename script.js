@@ -350,9 +350,9 @@ class SceneManager {
     this.currentScreen = 'splash';
     this.currentLang = 'zh';
 
-    // 吃蘋果次數與第 2 個小彩蛋狀態
+    // 吃蘋果次數與彩蛋輪流狀態
     this.applesEatenCount = 0;
-    this.hasTriggeredEgg2 = false;
+    this.isFromRoomFeeding = false;
 
     // 清理舊版遺留的錯誤快取，確保「你好！」使用作者正確錄音
     try {
@@ -461,8 +461,9 @@ class SceneManager {
     this.switchScreen('lang');
   }
 
-  // 第 1 個小彩蛋問答畫面 (于凱有照顧小家庭嗎？)
-  goToEasterEgg() {
+  // 第 1 個小彩蛋問答畫面 (于凱有照顧小家庭嗎？，支援語言選擇進入或吃蘋果輪流進入)
+  goToEasterEgg(fromRoom = false) {
+    this.isFromRoomFeeding = fromRoom;
     const feedback = document.getElementById('easter-feedback');
     if (feedback) {
       feedback.classList.add('hidden');
@@ -470,8 +471,15 @@ class SceneManager {
     }
     const btnYes = document.getElementById('btn-easter-yes');
     const btnNo = document.getElementById('btn-easter-no');
-    if (btnYes) btnYes.disabled = false;
-    if (btnNo) btnNo.disabled = false;
+    if (btnYes) {
+      btnYes.disabled = false;
+      btnYes.style.pointerEvents = 'auto';
+    }
+    if (btnNo) {
+      btnNo.disabled = false;
+      btnNo.style.animation = '';
+      btnNo.style.pointerEvents = 'auto';
+    }
     this.switchScreen('easter');
   }
 
@@ -1071,13 +1079,16 @@ class SceneManager {
       }, 420);
     }
 
-    // 第 2 個小彩蛋：鯊魚吃完第一顆蘋果，會跑出問答（Care you ! Yu care ! 是誰的口號？）
-    if (this.applesEatenCount === 1 && !this.hasTriggeredEgg2) {
-      this.hasTriggeredEgg2 = true;
-      setTimeout(() => {
+    // 只要有吃到蘋果，都會彈出林于凱問句，二個問句輪流呈現：
+    // 第 1、3、5 次（奇數）：問句「Care you ! Yu care ! 是誰的口號？」
+    // 第 2、4、6 次（偶數）：問句「于凱有照顧小家庭嗎？」
+    setTimeout(() => {
+      if (this.applesEatenCount % 2 === 1) {
         this.goToEasterEgg2();
-      }, 850);
-    }
+      } else {
+        this.goToEasterEgg(true);
+      }
+    }, 850);
   }
 
   // 掉落小魚的物理動畫邏輯 (向下相容)
@@ -1176,7 +1187,11 @@ class SceneManager {
         }
 
         setTimeout(() => {
-          this.goToAdopt();
+          if (this.isFromRoomFeeding) {
+            this.goToRoom();
+          } else {
+            this.goToAdopt();
+          }
         }, 1200);
       });
 
@@ -1195,7 +1210,11 @@ class SceneManager {
         }
 
         setTimeout(() => {
-          this.goToAdopt();
+          if (this.isFromRoomFeeding) {
+            this.goToRoom();
+          } else {
+            this.goToAdopt();
+          }
         }, 1500);
       });
     }
