@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>妹妹 1108</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- 背景網格點陣 (開場用) -->
+  <div class="dot-grid-bg"></div>
+
+  <!-- 開場 Logo 畫面 (Splash Screen) -->
+  <section id="splash-screen" class="screen active">
+    <div class="splash-container">
+      <div class="logo-wrapper">
+        <img src="assets/author_logo.png" alt="Irene Logo" class="author-logo" />
+        <div class="logo-glow"></div>
+      </div>
+      <p class="logo-caption">PRESENTS</p>
+    </div>
+    <div class="skip-hint">點擊任意處或按空白鍵略過</div>
+  </section>
+
+  <!-- 語言選擇畫面 (Language Select Screen) -->
+  <section id="lang-select-screen" class="screen">
+    <!-- 棋盤格粉橘色背景 -->
+    <div class="checker-bg"></div>
+
+    <div class="lang-container">
+      <div class="lang-options">
+        <button class="lang-btn" data-lang="zh" title="中文">
+          <img src="assets/lang_btn_zh.png?v=clean_v5" alt="中文" class="lang-title-img img-zh" />
+        </button>
+        <button class="lang-btn" data-lang="ja" title="日本語">
+          <img src="assets/lang_btn_ja.png?v=clean_v5" alt="日本語" class="lang-title-img img-ja" />
+        </button>
+        <button class="lang-btn" data-lang="en" title="English">
+          <img src="assets/lang_btn_en.png?v=clean_v5" alt="English" class="lang-title-img img-en" />
+        </button>
+      </div>
+
+      <!-- 下方小鯊魚 (精確還原第二張參考圖：大幅居中原版黃色小鯊魚) -->
+      <div class="lang-shark-wrapper">
+        <img src="assets/shark_transparent.png?v=clean_v5" alt="小鯊魚" class="lang-shark" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 第 1 個小彩蛋問答畫面 (Easter Egg Screen: 于凱有照顧小家庭嗎？) -->
+  <section id="easter-egg-screen" class="screen">
+    <!-- 圓點點陣背景 (精確還原彩蛋截圖) -->
+    <div class="dot-grid-bg"></div>
+
+    <div class="easter-container">
+      <div class="easter-question">
+        <span class="yukai-name">于凱</span><span class="yukai-text">有照顧小家庭嗎？</span>
+      </div>
+
+      <div class="easter-choices">
+        <button id="btn-easter-yes" class="easter-btn" title="有照顧！">
+          <img src="assets/easter_check_btn.png?v=egg1" alt="✔" class="easter-icon icon-check" />
+        </button>
+        <button id="btn-easter-no" class="easter-btn" title="沒有？！">
+          <img src="assets/easter_cross_btn.png?v=egg1" alt="❌" class="easter-icon icon-cross" />
+        </button>
+      </div>
+
+      <div id="easter-feedback" class="easter-feedback hidden"></div>
+    </div>
+  </section>
+
+  <!-- 第 2 個小彩蛋問答畫面 (Easter Egg 2: Care you ! Yu care ! 是誰的口號？) -->
+  <section id="easter-egg-2-screen" class="screen">
+    <!-- 圓點點陣背景 -->
+    <div class="dot-grid-bg"></div>
+
+    <div class="easter2-container">
+      <!-- 標題與提問圖片 -->
+      <div class="easter2-title-wrap">
+        <img src="assets/easter_egg_2_title_clean.png?v=egg2" alt="Care you ! Yu care ! 是誰的口號？" class="easter2-title-img" />
+      </div>
+
+      <!-- 選擇題選項：1 林🐟凱 vs 2 林于凱 -->
+      <div class="easter2-choices">
+        <button id="btn-easter2-opt1" class="easter2-btn" title="1 林🐟凱">
+          <img src="assets/easter_egg_2_opt1_clean.png?v=egg2" alt="1 林🐟凱" class="easter2-opt-img" />
+        </button>
+        <button id="btn-easter2-opt2" class="easter2-btn" title="2 林于凱">
+          <img src="assets/easter_egg_2_opt2_clean.png?v=egg2" alt="2 林于凱" class="easter2-opt-img" />
+        </button>
+      </div>
+
+      <!-- 回饋文字 -->
+      <div id="easter2-feedback" class="easter-feedback hidden"></div>
+    </div>
+  </section>
+
+  <!-- 領養確認對話框畫面 (Adopt Dialog Screen) -->
+  <section id="adopt-screen" class="screen">
+    <div class="adopt-bg"></div>
+
+    <div class="adopt-container">
+      <!-- 像素對話框 -->
+      <div class="adopt-dialog-card">
+        <!-- 四個角落的裝飾性像素點 -->
+        <span class="corner top-left"></span>
+        <span class="corner top-right"></span>
+        <span class="corner bottom-left"></span>
+        <span class="corner bottom-right"></span>
+
+        <div class="dialog-text-area">
+          <p class="dialog-line" id="txt-adopt-line1">要領養一只</p>
+          <p class="dialog-line" id="txt-adopt-line2">電子小鯊魚嗎？</p>
+        </div>
+      </div>
+
+      <!-- 選擇按鈕組 -->
+      <div class="adopt-buttons">
+        <button id="btn-adopt-yes" class="pixel-choice-btn btn-yes">
+          <span id="txt-adopt-yes">好的</span>
+        </button>
+        <button id="btn-adopt-no" class="pixel-choice-btn btn-no">
+          <span id="txt-adopt-no">不要</span>
+        </button>
+      </div>
+
+      <!-- 下方單獨一隻黃色小鯊魚 -->
+      <div class="adopt-single-shark-wrap">
+        <img src="assets/shark_transparent.png?v=clean_v5" alt="黃色小鯊魚" class="adopt-single-shark" />
+      </div>
+
+      <!-- 開心慶祝的小鯊魚浮出動態層 -->
+      <div id="happy-celebration" class="happy-celebration">
+        <div class="sparkles-container"></div>
+        <img id="happy-shark-img" src="assets/shark_happy_transparent.png?v=clean_v5" alt="開心小鯊魚" class="happy-shark" />
+        <div class="happy-text" id="txt-happy-cheer">太棒了！小鯊魚很開心！✨</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 結局 11 畫面 (Ending 11 Screen) -->
+  <section id="ending-screen" class="screen">
+    <div class="ending-container">
+      <div class="ending-card">
+        <img src="assets/ending_11.jpg" alt="結局 11: 一個人也很自在" class="ending-img" />
+      </div>
+      <div class="ending-actions">
+        <button id="btn-restart-from-ending" class="pixel-choice-btn btn-restart">
+          <span id="txt-restart">重新開始</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主選單畫面 (Main Menu) -->
+  <section id="main-menu" class="screen">
+    <div class="menu-container">
+      <!-- 吉祥物小鯊魚 -->
+      <div class="mascot-wrapper">
+        <img src="assets/shark_transparent.png?v=clean_v5" alt="小鯊魚" class="mascot-shark" />
+        <div class="mascot-shadow"></div>
+      </div>
+
+      <div class="title-area">
+        <span class="subtitle">PROJECT</span>
+        <h1 class="game-title" id="txt-title">妹妹 1108</h1>
+        <div class="divider"></div>
+      </div>
+
+      <nav class="menu-buttons">
+        <button id="btn-start" class="menu-btn primary">
+          <span class="btn-text" id="txt-btn-start">開始遊戲</span>
+          <span class="btn-indicator">▶</span>
+        </button>
+        <button id="btn-load" class="menu-btn">
+          <span class="btn-text" id="txt-btn-load">讀取存檔</span>
+        </button>
+        <button id="btn-settings" class="menu-btn">
+          <span class="btn-text" id="txt-btn-settings">系統設定</span>
+        </button>
+        <button id="btn-switch-lang" class="menu-btn text-only">
+          <span class="btn-text" id="txt-btn-lang">切換語言 (Language)</span>
+        </button>
+        <button id="btn-replay-logo" class="menu-btn text-only">
+          <span class="btn-text" id="txt-btn-replay">重播開場 Logo</span>
+        </button>
+      </nav>
+
+      <footer class="menu-footer">
+        <span>© 2026 Irene. All Rights Reserved.</span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- 小鯊魚房間場景 (Cozy Room Scene) -->
+  <section id="game-scene" class="screen">
+    <div class="room-viewport">
+      <!-- 窗戶後方的動態天空與飄動雲層 -->
+      <div class="window-sky-container">
+        <div class="window-sky-bg"></div>
+        <div class="window-clouds-drift">
+          <img src="assets/window_cloud.png" alt="窗外雲" class="win-cloud win-cloud-1" />
+          <img src="assets/window_cloud.png" alt="窗外雲" class="win-cloud win-cloud-2" />
+        </div>
+      </div>
+
+      <!-- 窗台上的黃色小鴨 (還原最新參考圖) -->
+      <img id="window-rubber-duck" src="assets/rubber_duck_transparent.png?v=clean_v4" alt="黃色小鴨" class="window-rubber-duck" title="呱呱！" />
+
+      <!-- 房間本體背景圖 (窗戶已鏤空，露出後方動態雲) -->
+      <img src="assets/room_cozy_cutout.png?v=clean_v4" alt="小鯊魚的房間" class="room-background" />
+
+      <!-- 右上角控制區 (外出按鈕 + 錄音配音鈕 + 選單返回鈕) -->
+      <div class="top-right-controls">
+        <button id="btn-open-recorder" class="hud-btn-mini pixel-box btn-voice" title="用自己的聲音錄製第一句話">
+          <span>🎙️ 錄音配音</span>
+        </button>
+        <button id="btn-go-outdoor" class="hud-btn-mini pixel-box btn-outdoor">
+          <span>🌿 外出</span>
+        </button>
+        <button id="btn-back-menu" class="hud-btn-mini pixel-box">‹ 選單</button>
+      </div>
+
+      <!-- 互動小鯊魚表情反應用圖層 (精確重疊在墊子上的小鯊魚位置) -->
+      <div id="room-shark" class="room-shark-layer">
+        <img id="room-shark-talk" src="assets/shark_talk_transparent.png?v=clean_v6" alt="說話小鯊魚" class="room-shark-talk hidden" />
+        <!-- 說話台詞文字氣泡 (還原參考圖「你好！」) -->
+        <div id="shark-speech-bubble" class="shark-speech-bubble hidden">
+          <span class="speech-text" id="txt-shark-speech">你好！</span>
+        </div>
+      </div>
+
+      <!-- 底部互動對話欄 (精確還原最新參考圖：藍框對話框 + 左側蘋果按鈕 +「給它吃蘋果吧」) -->
+      <div class="room-bottom-dialog">
+        <button id="btn-spawn-apple" class="bottom-apple-btn" title="點擊掉落蘋果">
+          <img src="assets/apple_transparent.png?v=clean_v4" alt="蘋果" class="bottom-apple-icon" />
+        </button>
+        <div class="bottom-dialog-text" id="txt-bottom-prompt">給它吃蘋果吧</div>
+      </div>
+
+      <!-- 掉落物品容器 (物理掉落層) -->
+      <div id="food-drop-container" class="food-drop-container"></div>
+    </div>
+  </section>
+
+  <!-- 外出場景 (Outdoor Scene) -->
+  <section id="outdoor-scene" class="screen">
+    <div class="outdoor-viewport">
+      <!-- 深邃藍天背景 -->
+      <div class="outdoor-sky">
+        <div class="outdoor-stars">
+          <span class="pixel-star star-1">+</span>
+          <span class="pixel-star star-2">✦</span>
+          <span class="pixel-star star-3">+</span>
+        </div>
+      </div>
+
+      <!-- 動態飄移的雲朵層 (雲會飄) -->
+      <div class="outdoor-clouds-track">
+        <img src="assets/outdoor_clouds.png" alt="戶外大雲朵" class="outdoor-cloud-img cloud-loop-1" />
+        <img src="assets/outdoor_clouds.png" alt="戶外大雲朵" class="outdoor-cloud-img cloud-loop-2" />
+      </div>
+
+      <!-- 前景草地、發光花朵與返回小木屋按鈕 -->
+      <img src="assets/outdoor_foreground.png" alt="戶外草地與花" class="outdoor-foreground" />
+
+      <!-- 草地上的小鯊魚 -->
+      <div class="outdoor-shark-wrapper">
+        <img src="assets/shark_transparent.png" alt="在草地散步的小鯊魚" class="outdoor-shark" />
+      </div>
+
+      <!-- 左下角點擊回家的房子按鈕 (精確對應參考圖中的小房子位置) -->
+      <button id="btn-return-home" class="outdoor-home-hotspot" title="回家">
+        <span class="home-hint">🏠 回家</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 語音錄製彈窗 (作者專屬配音系統：你好！ & 我想吃蘋果) -->
+  <div id="voice-recorder-modal" class="modal-overlay hidden">
+    <div class="modal-card pixel-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-voice-title">🎙️ 作者專屬原聲配音</h3>
+        <button id="btn-close-modal" class="modal-close-btn" title="關閉">✕</button>
+      </div>
+
+      <!-- 句子選擇標籤頁 (共四句配音) -->
+      <div class="voice-selector-tabs">
+        <button id="tab-voice-hello" class="voice-tab" data-id="hello">
+          <span>①「你好！」</span>
+          <span class="tab-badge" id="badge-hello">已錄製 ✓</span>
+        </button>
+        <button id="tab-voice-apple" class="voice-tab" data-id="want_apple">
+          <span>②「我想吃蘋果」</span>
+          <span class="tab-badge" id="badge-apple">已錄製 ✓</span>
+        </button>
+        <button id="tab-voice-fish" class="voice-tab" data-id="pick_fish">
+          <span>③「對對就是那個」</span>
+          <span class="tab-badge" id="badge-fish">已錄製 ✓</span>
+        </button>
+        <button id="tab-voice-give" class="voice-tab active" data-id="give_me">
+          <span>④「可以給我嗎？」</span>
+          <span class="tab-badge" id="badge-give">待錄製 🎙️</span>
+        </button>
+      </div>
+
+      <p class="modal-desc" id="modal-voice-desc">現在錄製第四句（緊接著第三句後）：用自己的聲音說「<strong>可以給我嗎？</strong>」！</p>
+
+      <div class="recorder-controls">
+        <button id="btn-record-toggle" class="rec-action-btn btn-rec">
+          <span id="txt-rec-status">🔴 開始錄音</span>
+        </button>
+        <button id="btn-record-play" class="rec-action-btn btn-play" disabled>
+          <span>▶ 試聽</span>
+        </button>
+        <button id="btn-record-save" class="rec-action-btn btn-save" disabled>
+          <span>💾 保存為正式版語音</span>
+        </button>
+      </div>
+
+      <div class="recorder-status" id="rec-status-tip">
+        點擊「開始錄音」後，請清晰說出：「可以給我嗎？」
+      </div>
+
+      <div class="modal-divider"></div>
+
+      <div class="file-upload-section">
+        <span class="upload-label">或上傳現有音檔為此句語音 (MP3/WAV/M4A)：</span>
+        <input type="file" id="audio-file-input" accept="audio/*" class="audio-input" />
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

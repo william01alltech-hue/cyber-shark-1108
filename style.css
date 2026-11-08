@@ -1,0 +1,1724 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-color: #f7fafc;
+  --dot-color: #b0c4de;
+  --primary-accent: #6aa8ea;
+  --secondary-accent: #92e0be;
+  --text-dark: #2c3e50;
+  --text-muted: #7f8c8d;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --shadow-color: rgba(60, 90, 130, 0.12);
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  user-select: none;
+}
+
+/* 點陣背景效果 (仿照 Logo 風格) */
+.dot-grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(#96b8d9 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridShift 30s linear infinite;
+}
+
+@keyframes gridShift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 240px 240px;
+  }
+}
+
+/* 螢幕切換容器 */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none !important;
+  visibility: hidden;
+}
+
+.screen.active {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  z-index: 50 !important;
+}
+
+/* ===== 開場 Logo 畫面 ===== */
+#splash-screen {
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.splash-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-10px);
+}
+
+.logo-wrapper {
+  position: relative;
+  display: inline-block;
+  transform-origin: center center;
+  animation: logoEntrance 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.author-logo {
+  max-width: 380px;
+  width: 75vw;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 24px rgba(98, 168, 234, 0.25));
+}
+
+.logo-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(146, 224, 190, 0.4) 0%, rgba(106, 168, 234, 0.2) 40%, transparent 70%);
+  filter: blur(25px);
+  z-index: -1;
+  animation: glowPulse 2.5s ease-in-out infinite alternate;
+}
+
+.logo-caption {
+  margin-top: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  color: #7997b5;
+  opacity: 0;
+  animation: captionFade 1.6s ease-out 0.8s forwards;
+}
+
+.skip-hint {
+  position: absolute;
+  bottom: 32px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  opacity: 0;
+  animation: hintBlink 2s ease-in-out 1.5s infinite alternate;
+}
+
+@keyframes logoEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.02) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes captionFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hintBlink {
+  0% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.65;
+  }
+}
+
+/* ===== 主選單畫面 ===== */
+#main-menu {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.6) 0%, rgba(240, 245, 250, 0.8) 100%);
+}
+
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
+  width: 90%;
+  padding: 40px 32px;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px var(--shadow-color);
+  animation: menuAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes menuAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.title-area {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.title-area .subtitle {
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  font-weight: 700;
+  color: var(--primary-accent);
+}
+
+.title-area .game-title {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #4f8ecc 0%, #20639b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 6px 0 12px;
+}
+
+.title-area .divider {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--secondary-accent), var(--primary-accent));
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-dark);
+  background: #ffffff;
+  border: 1px solid #dce5ee;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.menu-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-accent);
+  box-shadow: 0 8px 18px rgba(106, 168, 234, 0.2);
+  color: #20639b;
+}
+
+.menu-btn:active {
+  transform: translateY(0);
+}
+
+.menu-btn.primary {
+  background: linear-gradient(135deg, #6aa8ea 0%, #4790db 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(71, 144, 219, 0.35);
+}
+
+.menu-btn.primary:hover {
+  background: linear-gradient(135deg, #7bb3ee 0%, #5499e0 100%);
+  box-shadow: 0 10px 22px rgba(71, 144, 219, 0.45);
+  color: #ffffff;
+}
+
+.menu-btn.primary .btn-indicator {
+  margin-left: 8px;
+  font-size: 12px;
+  transition: transform 0.25s ease;
+}
+
+.menu-btn.primary:hover .btn-indicator {
+  transform: translateX(4px);
+}
+
+.menu-btn.text-only {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 8px;
+}
+
+.menu-btn.text-only:hover {
+  color: var(--primary-accent);
+  text-decoration: underline;
+  transform: none;
+}
+
+.menu-footer {
+  margin-top: 28px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* ===== 語言選擇畫面 (Language Select) ===== */
+#lang-select-screen {
+  overflow: hidden;
+}
+
+/* 粉橘色棋盤格背景 */
+.checker-bg {
+  position: absolute;
+  inset: -60px;
+  background-color: #fec8af;
+  background-image:
+    linear-gradient(45deg, #febc9d 25%, transparent 25%),
+    linear-gradient(-45deg, #febc9d 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #febc9d 75%),
+    linear-gradient(-45deg, transparent 75%, #febc9d 75%);
+  background-size: 80px 80px;
+  background-position: 0 0, 0 40px, 40px -40px, -40px 0px;
+  animation: checkerScroll 40s linear infinite;
+  z-index: 0;
+}
+
+@keyframes checkerScroll {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(40px, 40px);
+  }
+}
+
+.lang-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 92vh;
+  max-width: 540px;
+  width: 95%;
+  padding: 30px 0 20px;
+  box-sizing: border-box;
+}
+
+.lang-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 10px;
+  outline: none;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1) translateY(-3px);
+}
+
+.lang-btn:active {
+  transform: scale(0.96);
+}
+
+.lang-title-img {
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(180, 70, 70, 0.15));
+  user-select: none;
+  pointer-events: none;
+}
+
+.lang-title-img.img-zh {
+  width: 185px;
+  max-width: 50vw;
+}
+
+.lang-title-img.img-ja {
+  width: 285px;
+  max-width: 76vw;
+}
+
+.lang-title-img.img-en {
+  width: 365px;
+  max-width: 88vw;
+}
+
+.lang-shark-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.lang-shark {
+  width: 330px;
+  max-width: 80vw;
+  max-height: 36vh;
+  object-fit: contain;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: langSharkFloat 2.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 14px 26px rgba(220, 140, 40, 0.35));
+}
+
+@keyframes langSharkFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(-16px) rotate(-2deg);
+  }
+}
+
+/* ===== 第 1 個小彩蛋問答畫面 (Easter Egg: 于凱有照顧小家庭嗎？) ===== */
+#easter-egg-screen {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.easter-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 820px;
+  width: 90%;
+  padding: 40px 20px;
+}
+
+.easter-question {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 52px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin-bottom: 60px;
+  user-select: none;
+}
+
+.yukai-name {
+  color: #111111;
+  font-weight: 500;
+}
+
+.yukai-text {
+  color: #27d5e8;
+  font-weight: 400;
+}
+
+.easter-choices {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+  z-index: 20;
+}
+
+.easter-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 16px;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 30;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.easter-btn:hover {
+  transform: scale(1.18);
+}
+
+.easter-btn:active {
+  transform: scale(0.92);
+}
+
+.easter-icon {
+  width: 140px;
+  max-width: 32vw;
+  height: auto;
+  user-select: none;
+  pointer-events: none !important;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+}
+
+.easter-feedback {
+  margin-top: 36px;
+  font-family: 'DotGothic16', monospace, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #333333;
+  animation: feedbackPop 0.3s cubic-bezier(0.18, 1, 0.3, 1) forwards;
+}
+
+.easter-feedback.hidden {
+  display: none;
+}
+
+@keyframes feedbackPop {
+  0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes easterShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-12px); }
+  40%, 80% { transform: translateX(12px); }
+}
+
+/* ===== 第 2 個小彩蛋問答畫面 (Easter Egg 2: Care you ! Yu care ! 是誰的口號？) ===== */
+#easter-egg-2-screen {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.easter2-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 860px;
+  width: 92%;
+  padding: 30px 20px;
+}
+
+.easter2-title-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.easter2-title-img {
+  width: 520px;
+  max-width: 85vw;
+  height: auto;
+  image-rendering: auto;
+  filter: drop-shadow(0 6px 16px rgba(0, 160, 255, 0.18));
+}
+
+#easter-egg-screen.active,
+#easter-egg-2-screen.active {
+  z-index: 100 !important;
+}
+
+.easter2-choices {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  width: 100%;
+  max-width: 760px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 20;
+}
+
+.easter2-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 30;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.easter2-btn:hover {
+  transform: scale(1.12);
+}
+
+.easter2-btn:active {
+  transform: scale(0.95);
+}
+
+.easter2-opt-img {
+  width: 290px;
+  max-width: 42vw;
+  height: auto;
+  user-select: none;
+  pointer-events: none !important;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+}
+
+/* ===== 領養確認畫面 (Adopt Screen) ===== */
+#adopt-screen {
+  background: radial-gradient(circle at center, #ffd6c2 0%, #febf9f 100%);
+  overflow: hidden;
+}
+
+.adopt-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.08) 75%);
+  background-size: 60px 60px;
+  opacity: 0.7;
+}
+
+.adopt-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 520px;
+  width: 90%;
+}
+
+/* 像素風格對話框 (還原第二張參考圖) */
+.adopt-dialog-card {
+  position: relative;
+  width: 100%;
+  background: #ffffff;
+  border: 4px solid #1a1a1a;
+  border-radius: 4px;
+  padding: 44px 32px;
+  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.08);
+  margin-bottom: 32px;
+  box-sizing: border-box;
+}
+
+/* 四個角落裝飾線 */
+.adopt-dialog-card .corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.adopt-dialog-card .corner.top-left {
+  top: 8px;
+  left: 8px;
+  border-top: 3px dashed #ea6b5a;
+  border-left: 3px dashed #ea6b5a;
+}
+
+.adopt-dialog-card .corner.top-right {
+  top: 8px;
+  right: 8px;
+  border-top: 3px dashed #f5b14c;
+  border-right: 3px dashed #f5b14c;
+}
+
+.adopt-dialog-card .corner.bottom-left {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 3px dashed #ea6b5a;
+  border-left: 3px dashed #ea6b5a;
+}
+
+.adopt-dialog-card .corner.bottom-right {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 3px dashed #f5b14c;
+  border-right: 3px dashed #f5b14c;
+}
+
+.dialog-text-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.dialog-line {
+  font-family: 'DotGothic16', monospace, sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #111111;
+  line-height: 1.4;
+  margin: 0;
+  image-rendering: pixelated;
+}
+
+/* 像素選擇按鈕組 (好的 / 不要) */
+.adopt-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.pixel-choice-btn {
+  flex: 1;
+  max-width: 180px;
+  padding: 14px 20px;
+  font-family: 'DotGothic16', 'Silkscreen', monospace, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #111111;
+  border: 3.5px solid #1a1a1a;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #1a1a1a;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.pixel-choice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 #1a1a1a;
+}
+
+.pixel-choice-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #1a1a1a;
+}
+
+/* 紅色按鈕 (好的) */
+.btn-yes {
+  background-color: #df4a42;
+}
+.btn-yes:hover {
+  background-color: #ea564e;
+}
+
+/* 綠色按鈕 (不要) - 支援滑動逃跑效果 */
+.btn-no {
+  background-color: #88b773;
+  transition: transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1), background-color 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+  z-index: 5;
+}
+.btn-no:hover {
+  background-color: #98c684;
+}
+
+/* ===== 領養畫面下方的單獨一隻黃色小鯊魚 ===== */
+.adopt-single-shark-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  user-select: none;
+}
+
+.adopt-single-shark {
+  width: 170px;
+  max-width: 48vw;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 10px 18px rgba(230, 150, 40, 0.4));
+  animation: singleSharkFloat 2.6s ease-in-out infinite alternate;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.adopt-single-shark:hover {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+@keyframes singleSharkFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+  100% { transform: translateY(-16px) rotate(-2deg); }
+}
+
+/* ===== 結局 11 畫面 (Ending 11 Screen) ===== */
+#ending-screen {
+  background: radial-gradient(circle at center, #fff2e0 0%, #ffcfa6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.ending-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  max-width: 480px;
+  width: 90%;
+  animation: endingAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes endingAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ending-card {
+  position: relative;
+  width: 100%;
+  background: #ffffff;
+  border: 4px solid #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 0 rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.ending-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.ending-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-restart {
+  background-color: #ffd15c;
+  min-width: 180px;
+}
+
+.btn-restart:hover {
+  background-color: #ffe07d;
+}
+
+/* ===== 開心小鯊魚慶祝層 ===== */
+.happy-celebration {
+  position: absolute;
+  inset: -20px;
+  background: rgba(255, 245, 235, 0.95);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+}
+
+.happy-celebration.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.happy-shark {
+  width: 220px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: happyBounce 0.6s cubic-bezier(0.2, 0.8, 0.4, 1) infinite alternate;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.12));
+}
+
+@keyframes happyBounce {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-20px) scale(1.08) rotate(-4deg);
+  }
+}
+
+.happy-text {
+  margin-top: 18px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: #df4a42;
+  letter-spacing: 0.08em;
+}
+
+/* ===== 主選單吉祥物小鯊魚 ===== */
+.mascot-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mascot-shark {
+  width: 110px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  animation: sharkFloat 3s ease-in-out infinite alternate;
+  filter: drop-shadow(0 8px 16px rgba(242, 198, 82, 0.4));
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mascot-shark:hover {
+  transform: scale(1.12) rotate(-5deg);
+}
+
+.mascot-shadow {
+  width: 70px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  margin-top: 4px;
+  animation: shadowPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes sharkFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(4deg);
+  }
+  100% {
+    transform: translateY(-16px) rotate(-3deg);
+  }
+}
+
+@keyframes shadowPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(0.7);
+    opacity: 0.05;
+  }
+}
+
+/* ===== 房間場景 (Cozy Room Scene) ===== */
+#game-scene {
+  background: #2a1f18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.room-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  max-height: 100vh;
+  aspect-ratio: 839 / 646;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  background: #332219;
+}
+
+/* 窗戶後方的動態天空與飄動雲層 (窗外雲會飄) */
+.window-sky-container {
+  position: absolute;
+  top: 0;
+  left: 54.8%;
+  width: 32%;
+  height: 30.5%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.window-sky-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #3d80c6 0%, #76b1e6 100%);
+}
+
+.window-clouds-drift {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  width: 250%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  animation: winCloudDrift 30s linear infinite;
+}
+
+.win-cloud {
+  width: 50%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes winCloudDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.room-background {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+    /* 像素風格邊框共用 class */
+    .pixel-box {
+      background: #ffffff;
+      border: 3.5px solid #1a1a1a;
+      border-radius: 6px;
+      box-shadow: 0 4px 0 #1a1a1a;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      user-select: none;
+    }
+
+    .pixel-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #1a1a1a;
+    }
+
+    .pixel-box:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1a1a1a;
+    }
+
+    /* 窗台上的黃色小鴨 (還原最新參考圖) */
+    .window-rubber-duck {
+      position: absolute;
+      top: 10%;
+      right: 17%;
+      width: 58px;
+      height: auto;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      z-index: 6;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.22));
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .window-rubber-duck:hover {
+      transform: scale(1.15) translateY(-3px) rotate(4deg);
+    }
+
+    .window-rubber-duck:active {
+      transform: scale(0.92) translateY(2px);
+    }
+
+    /* 底部互動對話欄 (精確還原最新參考圖：雙層藍框、奶白底、左側蘋果、給它吃蘋果吧) */
+    .room-bottom-dialog {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      right: 14px;
+      height: 94px;
+      background: #fdfbf5;
+      border: 3.5px solid #141c38;
+      box-shadow: inset 0 0 0 4.5px #3252a0, 0 6px 14px rgba(0, 0, 0, 0.25);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 22px;
+      z-index: 25;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    .bottom-apple-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bottom-apple-btn:hover {
+      transform: scale(1.18) translateY(-2px);
+    }
+
+    .bottom-apple-btn:active {
+      transform: scale(0.92);
+    }
+
+    .bottom-apple-icon {
+      width: 56px;
+      height: auto;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+      animation: appleFloat 2.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes appleFloat {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-4px) rotate(3deg); }
+    }
+
+    .bottom-dialog-text {
+      font-family: 'DotGothic16', monospace, sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.12em;
+      text-shadow:
+        -2px -2px 0 #111111,
+        0 -2px 0 #111111,
+        2px -2px 0 #111111,
+        -2px 0 0 #111111,
+        2px 0 0 #111111,
+        -2px 2px 0 #111111,
+        0 2px 0 #111111,
+        2px 2px 0 #111111,
+        0 3px 0 #111111;
+      image-rendering: pixelated;
+      user-select: none;
+    }
+
+/* 右上角選單返回鈕 */
+.top-right-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-outdoor {
+  background: #e8f7dc;
+  border-color: #274b1e;
+  color: #274b1e;
+}
+.btn-outdoor:hover {
+  background: #f1fbe8;
+}
+
+.btn-voice {
+  background: #fff0d4;
+  border-color: #7a4a15;
+  color: #7a4a15;
+}
+.btn-voice:hover {
+  background: #fff7e6;
+}
+
+/* 說話與吃東西張嘴小鯊魚圖層 (與坐墊底圖分毫不差精準重合) */
+.room-shark-talk {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: none;
+}
+
+.room-shark-talk.hidden {
+  display: none;
+}
+
+.shark-speech-bubble {
+  position: absolute;
+  top: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: speechPop 0.3s cubic-bezier(0.18, 1, 0.3, 1) forwards;
+  z-index: 15;
+}
+
+.shark-speech-bubble.hidden {
+  display: none;
+}
+
+.speech-text {
+  font-family: 'DotGothic16', monospace, sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+  text-shadow:
+    -3px -3px 0 #000000,
+     0   -3px 0 #000000,
+     3px -3px 0 #000000,
+    -3px  0   0 #000000,
+     3px  0   0 #000000,
+    -3px  3px 0 #000000,
+     0    3px 0 #000000,
+     3px  3px 0 #000000,
+    -4px  0   0 #000000,
+     4px  0   0 #000000,
+     0   -4px 0 #000000,
+     0    4px 0 #000000;
+  image-rendering: pixelated;
+  user-select: none;
+}
+
+@keyframes speechPop {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ===== 語音錄製彈窗 (Voice Recorder Modal) ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  width: 90%;
+  max-width: 440px;
+  background: #ffffff;
+  padding: 24px;
+  border: 4px solid #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 0 12px 0 rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: modalEnter 0.25s cubic-bezier(0.18, 1, 0.3, 1);
+}
+
+@keyframes modalEnter {
+  0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 句子選擇標籤頁 */
+.voice-selector-tabs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.voice-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  background: #f1f5f9;
+  border: 2.5px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #475569;
+  transition: all 0.15s ease;
+}
+
+.voice-tab:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.voice-tab.active {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #92400e;
+  box-shadow: 0 2px 0 #d97706;
+}
+
+.tab-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.voice-tab.active .tab-badge {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.modal-title {
+  font-family: 'DotGothic16', monospace;
+  font-size: 20px;
+  color: #1a1a1a;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #888;
+  padding: 0 4px;
+}
+.modal-close-btn:hover {
+  color: #000;
+}
+
+.modal-desc {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.recorder-controls {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.rec-action-btn {
+  flex: 1;
+  padding: 10px 8px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  border: 2.5px solid #1a1a1a;
+  border-radius: 6px;
+  background: #f0f0f0;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #1a1a1a;
+  transition: all 0.1s ease;
+}
+
+.rec-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-rec {
+  background: #ffe3e3;
+  color: #b32020;
+}
+.btn-rec.recording {
+  background: #ff4747;
+  color: #ffffff;
+  animation: recPulse 1s infinite alternate;
+}
+
+@keyframes recPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.btn-play {
+  background: #e4f5ff;
+  color: #1a6499;
+}
+
+.btn-save {
+  background: #e6fae4;
+  color: #27791e;
+}
+
+.recorder-status {
+  font-size: 13px;
+  color: #777;
+  text-align: center;
+  min-height: 20px;
+  font-weight: 500;
+}
+
+.modal-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 4px 0;
+}
+
+.file-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upload-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.audio-input {
+  font-size: 12px;
+}
+
+/* ===== 外出場景 (Outdoor Scene) ===== */
+#outdoor-scene {
+  background: #112038;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.outdoor-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 835px;
+  max-height: 100vh;
+  aspect-ratio: 835 / 796;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  background: #1e4579;
+}
+
+/* 藍天與星星 */
+.outdoor-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #1b3d6d 0%, #255899 60%, #3a75bb 100%);
+  z-index: 1;
+}
+
+.outdoor-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pixel-star {
+  position: absolute;
+  color: #ffffff;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  animation: starTwinkle 3s ease-in-out infinite alternate;
+}
+
+.star-1 { top: 12%; left: 6%; animation-delay: 0s; font-size: 18px; }
+.star-2 { top: 8%; right: 18%; animation-delay: 1.2s; font-size: 14px; }
+.star-3 { top: 22%; right: 8%; animation-delay: 2.1s; font-size: 16px; }
+
+@keyframes starTwinkle {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* 戶外飄動的雲朵層 (雲會飄) */
+.outdoor-clouds-track {
+  position: absolute;
+  top: 4%;
+  left: 0;
+  width: 250%;
+  height: 62%;
+  display: flex;
+  align-items: flex-start;
+  z-index: 3;
+  animation: outdoorCloudsDrift 45s linear infinite;
+  pointer-events: none;
+}
+
+.outdoor-cloud-img {
+  width: 50%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 6px 12px rgba(15, 35, 65, 0.25));
+}
+
+@keyframes outdoorCloudsDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* 前景草地與花朵 (在雲朵前方遮擋) */
+.outdoor-foreground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 草地上的小鯊魚 */
+.outdoor-shark-wrapper {
+  position: absolute;
+  bottom: 18%;
+  left: 42%;
+  transform: translateX(-50%);
+  width: 18%;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.outdoor-shark {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: outdoorSharkHop 2.4s ease-in-out infinite alternate;
+  filter: drop-shadow(0 8px 12px rgba(20, 60, 20, 0.3));
+}
+
+@keyframes outdoorSharkHop {
+  0% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+  100% { transform: translateY(-4px) rotate(-2deg); }
+}
+
+/* 左下角小房子按鈕 (點擊回家) */
+.outdoor-home-hotspot {
+  position: absolute;
+  bottom: 2.5%;
+  left: 2.5%;
+  width: 16%;
+  height: 19%;
+  background: transparent;
+  border: 3px dashed transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.outdoor-home-hotspot:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 16px rgba(255, 220, 150, 0.6);
+  transform: scale(1.05);
+}
+
+.outdoor-home-hotspot:active {
+  transform: scale(0.95);
+}
+
+.home-hint {
+  font-family: 'DotGothic16', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  transform: translateY(-40px);
+}
+
+.outdoor-home-hotspot:hover .home-hint {
+  opacity: 1;
+}
+
+            .hud-btn-mini {
+              padding: 6px 12px;
+              font-family: 'DotGothic16', monospace;
+              font-size: 14px;
+              font-weight: 700;
+              color: #2c3e50;
+              background: rgba(255, 255, 255, 0.95);
+            }
+
+/* 房間小鯊魚表情反應圖層 (精準100%分毫不差貼合坐墊底圖上的小鯊魚) */
+.room-shark-layer {
+  position: absolute;
+  left: 28.844%;
+  top: 31.734%;
+  width: 39.094%;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10;
+}
+
+                  /* 愛心飄起特效 */
+                  .shark-hearts-container {
+                    position: absolute;
+                    top: -20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 100%;
+                    height: 60px;
+                    pointer-events: none;
+                  }
+
+                    .food-heart {
+                      position: absolute;
+                      font-size: 24px;
+                      color: #ff5e7e;
+                      animation: heartFloat 1s ease-out forwards;
+                      user-select: none;
+                      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                    }
+
+                    @keyframes heartFloat {
+                      0% {
+                        opacity: 1;
+                        transform: translateY(0) scale(0.8);
+                      }
+                      100% {
+                        opacity: 0;
+                        transform: translateY(-50px) scale(1.3);
+                      }
+                    }
+
+/* 掉落食物容器與動態蘋果 */
+.food-drop-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.falling-apple,
+.falling-fish {
+  position: absolute;
+  width: 58px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.28));
+  cursor: grab;
+  pointer-events: auto;
+  user-select: none;
+  transition: transform 0.12s ease;
+  z-index: 25;
+}
+
+.falling-apple:hover,
+.falling-fish:hover {
+  transform: scale(1.12);
+}
+
+.falling-apple.picked-up,
+.falling-fish.picked-up {
+  cursor: grabbing;
+  transform: scale(1.18);
+  filter: drop-shadow(0 8px 16px rgba(255, 180, 50, 0.4));
+}
