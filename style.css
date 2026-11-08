@@ -1209,6 +1209,15 @@ body {
   background: #f1fbe8;
 }
 
+.btn-sound {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+.btn-sound:hover {
+  background: #f1f8e9;
+}
+
 .btn-voice {
   background: #fff0d4;
   border-color: #7a4a15;

@@ -2,6 +2,8 @@
 class SoundFX {
   constructor() {
     this.ctx = null;
+    this.buffers = {};
+    this.isPreloading = false;
   }
 
   init() {
@@ -11,6 +13,58 @@ class SoundFX {
     }
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
+    }
+  }
+
+  // 手機版音訊解碼預載 (Web Audio API Buffer 模式，不受手機 setTimeout 限制)
+  preloadVoices() {
+    if (this.isPreloading) return;
+    this.isPreloading = true;
+    this.init();
+    if (!this.ctx) return;
+
+    const files = {
+      hello: 'assets/shark_hello.wav',
+      want_apple: 'assets/shark_want_apple.wav',
+      pick_fish: 'assets/shark_pick_fish.wav',
+      give_me: 'assets/shark_give_me.wav'
+    };
+
+    Object.entries(files).forEach(([id, url]) => {
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error('Fetch failed');
+          return res.arrayBuffer();
+        })
+        .then((arrBuf) => {
+          this.ctx.decodeAudioData(
+            arrBuf,
+            (decoded) => {
+              this.buffers[id] = decoded;
+            },
+            () => {}
+          );
+        })
+        .catch(() => {});
+    });
+  }
+
+  // 播放 Web Audio 解碼後的緩衝音訊 (手機 iOS / Android 100% 穩定相容)
+  playBuffer(id, onFinished) {
+    this.init();
+    if (!this.ctx || !this.buffers[id]) return false;
+
+    try {
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.buffers[id];
+      source.connect(this.ctx.destination);
+      if (typeof onFinished === 'function') {
+        source.onended = onFinished;
+      }
+      source.start(0);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -324,6 +378,14 @@ class SceneManager {
     this.recordedAudioUrl = null;
     this.dialogueIndex = 0; // 對話輪播計數器
 
+    // 手機預熱音訊池 (避免手機瀏覽器阻擋非同步 Audio 物件)
+    this.audioPool = {
+      hello: new Audio('assets/shark_hello.wav'),
+      want_apple: new Audio('assets/shark_want_apple.wav'),
+      pick_fish: new Audio('assets/shark_pick_fish.wav'),
+      give_me: new Audio('assets/shark_give_me.wav')
+    };
+
     this.initEvents();
     this.initVoiceRecorder();
     this.startSplashScreen();
@@ -543,7 +605,27 @@ class SceneManager {
       }, 350);
     };
 
-    // 優先播放專案中的正式版音檔 (shark_hello.wav, shark_want_apple.wav...)
+    // 1. 優先使用 Web Audio API 解碼 Buffer 播放 (手機 iOS/Android 最穩定、不受 setTimeout 與 Autoplay 限制！)
+    if (this.sfx.buffers[voiceId]) {
+      const played = this.sfx.playBuffer(voiceId, finishTalking);
+      if (played) return;
+    }
+
+    // 2. 若 Buffer 正在下載或尚未載入，使用預熱好的 Audio 池播放
+    const pooledAudio = this.audioPool && this.audioPool[voiceId];
+    if (pooledAudio) {
+      pooledAudio.currentTime = 0;
+      pooledAudio.onended = finishTalking;
+      const playPromise = pooledAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          this.playFallbackVoice(voiceId, finishTalking);
+        });
+      }
+      return;
+    }
+
+    // 3. 一般 Audio 嘗試
     const audioDisk = new Audio(currentLine.file + '?v=' + Date.now());
     let hasPlayed = false;
 
@@ -985,6 +1067,39 @@ class SceneManager {
   }
 
   initEvents() {
+    // 手機瀏覽器音訊解鎖機制 (針對 iOS Safari / Android Chrome 的 Autoplay 嚴格限制)
+    const unlockMobileAudio = () => {
+      this.sfx.init();
+      if (this.sfx.ctx) {
+        if (this.sfx.ctx.state === 'suspended') {
+          this.sfx.ctx.resume();
+        }
+        // 播放微秒級無聲音訊喚醒 iOS 硬體喇叭通道
+        try {
+          const buffer = this.sfx.ctx.createBuffer(1, 1, 22050);
+          const source = this.sfx.ctx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(this.sfx.ctx.destination);
+          source.start(0);
+        } catch (e) {}
+
+        this.sfx.preloadVoices();
+      }
+
+      // 預熱所有 Audio 物件
+      if (this.audioPool) {
+        Object.values(this.audioPool).forEach((audio) => {
+          try {
+            audio.load();
+          } catch (e) {}
+        });
+      }
+    };
+
+    ['touchstart', 'touchend', 'pointerdown', 'click'].forEach((evt) => {
+      window.addEventListener(evt, unlockMobileAudio, { once: true, passive: true });
+    });
+
     // 點擊或鍵盤跳過 Logo -> 進入語言選擇
     const skipSplash = () => {
       if (this.currentScreen === 'splash') {
@@ -1200,6 +1315,29 @@ class SceneManager {
         setTimeout(() => {
           rubberDuck.style.transform = '';
         }, 220);
+      });
+    }
+
+    // 房間右上角「🔊 聲音」按鈕 (手動點擊解鎖與測試聲音)
+    const btnSoundToggle = document.getElementById('btn-sound-toggle');
+    if (btnSoundToggle) {
+      btnSoundToggle.addEventListener('click', () => {
+        this.sfx.init();
+        if (this.sfx.ctx && this.sfx.ctx.state === 'suspended') {
+          this.sfx.ctx.resume();
+        }
+        this.sfx.playHappyJingle();
+
+        // 立即演示小鯊魚說第一句話「你好！」
+        this.playSharkGreeting('hello');
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS) {
+          const bottomPrompt = document.getElementById('txt-bottom-prompt');
+          if (bottomPrompt) {
+            bottomPrompt.textContent = '🔊 若無聲音，請關閉 iPhone 側邊靜音撥鈕並調大音量！';
+          }
+        }
       });
     }
 
