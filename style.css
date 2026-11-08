@@ -1023,6 +1023,12 @@ html, body {
   background: #332219;
 }
 
+.room-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 /* 窗戶後方的動態天空與飄動雲層 (窗外雲會飄) */
 .window-sky-container {
   position: absolute;
@@ -1740,70 +1746,115 @@ html, body {
   z-index: 60;
 }
 
-/* ===== 手機版完美直式玩法適配優化 (Mobile Portrait Mode Full Responsiveness) ===== */
+/* ===== 手機版完美直式全頁式玩法適配 (Full-Page Mobile Portrait Mode) ===== */
 @media (max-width: 680px), (orientation: portrait) and (max-width: 900px) {
   #game-scene {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background: #fc985d;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: max(8px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
-    box-sizing: border-box;
-    background: #241913 radial-gradient(circle at 50% 35%, #342217 0%, #170f0b 100%);
+    justify-content: flex-start;
+    align-items: stretch;
   }
 
   .room-viewport {
-    width: 100%;
-    max-width: min(100vw - 12px, 480px);
-    aspect-ratio: 839 / 646;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    margin: auto 0;
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    aspect-ratio: unset;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #fc985d;
+    background-image: url('assets/wood_floor_tile.png');
+    background-repeat: repeat;
+    background-size: 100vw auto;
+    background-position: left bottom;
   }
 
-  /* 房間右上角控制項縮小適配 */
+  .room-stage {
+    position: relative;
+    width: 100vw;
+    aspect-ratio: 839 / 646;
+    overflow: hidden;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  /* 房間右上角控制項置頂，避開手機瀏海與動態島安全區 */
   .top-right-controls {
-    top: 6px;
-    right: 6px;
-    gap: 4px;
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top));
+    right: 12px;
+    gap: 6px;
+    z-index: 35;
     max-width: 82%;
     flex-wrap: wrap;
     justify-content: flex-end;
-    z-index: 30;
   }
 
   .hud-btn-mini {
-    padding: 3px 6px;
-    font-size: 11px;
-    border-width: 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-width: 2.5px;
   }
 
-  /* 底部對話列與蘋果按鈕高度精簡，預留充足開闊地板供蘋果掉落，絕不擋住蘋果 */
+  /* 底部對話列沉底在手機最下方，靠安全邊距保護，留出中間整片開闊木地板供蘋果著陸 */
   .room-bottom-dialog {
-    bottom: max(6px, env(safe-area-inset-bottom));
-    left: 8px;
-    right: 8px;
-    height: clamp(50px, 13vw, 68px);
-    padding: 0 10px;
-    gap: 10px;
-    border-radius: 10px;
+    position: absolute;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 12px;
+    right: 12px;
+    height: clamp(54px, 14vw, 72px);
+    padding: 0 14px;
+    gap: 12px;
+    border-radius: 12px;
     z-index: 25;
   }
 
   .bottom-apple-icon,
   .btn-room-bottom-apple img {
-    width: clamp(34px, 9.5vw, 44px);
+    width: clamp(36px, 10vw, 46px);
   }
 
   .bottom-dialog-text {
-    font-size: clamp(14px, 4vw, 20px);
+    font-size: clamp(15px, 4.2vw, 22px);
     letter-spacing: 0.06em;
   }
 
   .falling-apple,
   .falling-fish {
-    width: clamp(42px, 11vw, 52px);
+    width: clamp(44px, 11vw, 54px);
     z-index: 50 !important;
+  }
+
+  /* 外出場景手機全頁式適配 */
+  #outdoor-scene {
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .outdoor-viewport {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    aspect-ratio: unset;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
   }
 
   /* 語言選擇畫面手機優化 */

@@ -938,27 +938,32 @@ class SceneManager {
     apple.src = 'assets/apple_transparent.png?v=clean_v4';
     apple.className = 'falling-apple';
 
+    const stage = document.querySelector('.room-stage') || viewport;
+    const stageRect = stage.getBoundingClientRect();
     const vpRect = viewport.getBoundingClientRect();
+    const dialog = document.querySelector('.room-bottom-dialog');
 
-    // 垂直在左側偏中開闊木地板掉落 (x ~ 28%)，避開邊界與按鈕，居於坐墊前方
+    // 垂直在左側偏中開闊木地板掉落 (x ~ 28%)，避開邊界與按鈕，居於坐墊左前方
     let posX = Math.round(vpRect.width * 0.28);
-    let posY = Math.round(vpRect.height * 0.12);
+    let posY = Math.round(stageRect.height * 0.15);
 
     apple.style.left = `${posX}px`;
     apple.style.top = `${posY}px`;
     container.appendChild(apple);
 
-    // 動態計算安全著陸地板高度，確保完全落在底部對話框上方至少 20px 的開闊木地板上，絕對不被對話框擋住！
-    const dialog = document.querySelector('.room-bottom-dialog');
+    // 計算木地板著陸高度 (確保 100% 穩穩掉在地板上，且在底部對話框上方)
+    const stageTopInVp = stageRect.top - vpRect.top;
     const appleHeight = 52;
-    let safeFloorY = vpRect.height * 0.58;
+    // 地板高度：在小鯊魚坐墊前方木地板區域 (約舞台高度的 72%)
+    let targetFloorY = Math.round(stageTopInVp + stageRect.height * 0.72);
+
     if (dialog) {
       const dialogRect = dialog.getBoundingClientRect();
       const dialogTopInVp = dialogRect.top - vpRect.top;
-      // 預留至少 20px 充足空隙，讓蘋果整顆完整飄浮在地板上，清清楚楚絕不重疊！
-      safeFloorY = Math.min(safeFloorY, dialogTopInVp - appleHeight - 20);
+      // 確保在對話框頂部上方至少 20px
+      targetFloorY = Math.min(targetFloorY, dialogTopInVp - appleHeight - 20);
     }
-    const floorY = Math.max(vpRect.height * 0.42, safeFloorY);
+    const floorY = targetFloorY;
 
     // 垂直掉落參數 (vx = 0 嚴格垂直下墜)
     let vy = 1.2;
@@ -1048,12 +1053,16 @@ class SceneManager {
       const curX = e.clientX - vpRect.left;
       const curY = e.clientY - vpRect.top;
 
-      // 若只是輕點蘋果（位移小於 14px），也直接觸發順暢餵食動效，對手機直式操作極度友善！
+      const stage = document.querySelector('.room-stage') || viewport;
+      const stageRect = stage.getBoundingClientRect();
+      const stageTopInVp = stageRect.top - vpRect.top;
+
+      // 若只是輕點蘋果（位移小於 14px），直接觸發順暢餵食動效，對手機直式全頁操作極度友善！
       const distMoved = Math.hypot(e.clientX - startPointerX, e.clientY - startPointerY);
       if (distMoved < 14) {
         apple.style.transition = 'all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1)';
         apple.style.left = `${vpRect.width * 0.44}px`;
-        apple.style.top = `${vpRect.height * 0.46}px`;
+        apple.style.top = `${stageTopInVp + stageRect.height * 0.48}px`;
         apple.style.transform = 'scale(0.85)';
         setTimeout(() => {
           apple.remove();
@@ -1062,14 +1071,14 @@ class SceneManager {
         return;
       }
 
-      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃，適應手機直式與桌面任何比例)
+      // 檢查是否拖拽至小鯊魚墊子附近 (餵給小鯊魚吃，適應手機全頁直式與桌面任何比例)
       const sharkCenterX = vpRect.width * 0.48;
-      const sharkCenterY = vpRect.height * 0.58;
+      const sharkCenterY = stageTopInVp + stageRect.height * 0.58;
       const dist = Math.hypot(curX - sharkCenterX, curY - sharkCenterY);
       const hitRadius = Math.max(130, vpRect.width * 0.35);
 
-      const inSharkArea = (curX >= vpRect.width * 0.18 && curX <= vpRect.width * 0.82 &&
-                           curY >= vpRect.height * 0.20 && curY <= vpRect.height * 0.80);
+      const inSharkArea = (curX >= vpRect.width * 0.16 && curX <= vpRect.width * 0.84 &&
+                           curY >= stageTopInVp && curY <= stageTopInVp + stageRect.height * 0.88);
 
       if (dist < hitRadius || inSharkArea) {
         // 餵食成功
