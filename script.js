@@ -1456,44 +1456,32 @@ class SceneManager {
       }, 420);
     }
 
-    // 依據吃蘋果次數進行對話與變形：
-    // 第 1 顆：吃掉，彈出問句 2 ("Care you ! Yu care ! 是誰的口號？")
-    // 第 2 顆：說「鯊魚應該吃魚肉？」，彈出問句 1 ("于凱有照顧小家庭嗎？")
-    // 第 3 顆：說「鯊魚吃蘋果也很正常」，變身為胖胖鯊 (Stage 1)，彈出問句 2
-    // 第 4 顆：說「好像身體卡住了」，變身為卡住小鯊魚 (Stage 2)，彈出問句 1
-    // 第 5 顆：說「它變得越來越方了」，變身為方形小鯊魚 (Stage 3)，彈出問句 2
+    // 依據吃蘋果次數進行對話與變形 (已移除答題干擾，流暢進行主線互動與結局 1)：
+    // 第 1 顆：吃掉，露出開心笑臉
+    // 第 2 顆：說「鯊魚應該吃魚肉？」
+    // 第 3 顆：說「鯊魚吃蘋果也很正常」，變身為胖胖鯊 (Stage 1)
+    // 第 4 顆：說「好像身體卡住了」，變身為卡住小鯊魚 (Stage 2)
+    // 第 5 顆：說「它變得越來越方了」，變身為方形小鯊魚 (Stage 3)
     // 第 6 顆：說「我怎麼…」，變身為全景大方塊 (Stage 4)，然後通關進入結局 1「胖胖鯊」！
     if (this.applesEatenCount === 1) {
-      setTimeout(() => {
-        this.goToEasterEgg2();
-      }, 850);
-    } else if (this.applesEatenCount === 2) {
-      this.playSharkGreeting('eat_2', () => {
+      const happySprite = document.getElementById('room-shark-happy');
+      if (happySprite) {
+        happySprite.classList.remove('hidden');
         setTimeout(() => {
-          this.goToEasterEgg(true);
-        }, 500);
-      });
+          happySprite.classList.add('hidden');
+        }, 900);
+      }
+    } else if (this.applesEatenCount === 2) {
+      this.playSharkGreeting('eat_2');
     } else if (this.applesEatenCount === 3) {
       this.showSharkStage(1);
-      this.playSharkGreeting('eat_3', () => {
-        setTimeout(() => {
-          this.goToEasterEgg2();
-        }, 500);
-      });
+      this.playSharkGreeting('eat_3');
     } else if (this.applesEatenCount === 4) {
       this.showSharkStage(2);
-      this.playSharkGreeting('eat_4', () => {
-        setTimeout(() => {
-          this.goToEasterEgg(true);
-        }, 500);
-      });
+      this.playSharkGreeting('eat_4');
     } else if (this.applesEatenCount === 5) {
       this.showSharkStage(3);
-      this.playSharkGreeting('eat_5', () => {
-        setTimeout(() => {
-          this.goToEasterEgg2();
-        }, 500);
-      });
+      this.playSharkGreeting('eat_5');
     } else if (this.applesEatenCount >= 6) {
       this.showSharkStage(4);
       this.playSharkGreeting('eat_6', () => {
@@ -1566,18 +1554,14 @@ class SceneManager {
       }
     });
 
-    // 語言選擇按鈕事件 -> 若選「中文」進入第 1 個小彩蛋問答，其餘語言直接進入領養確認畫面
+    // 語言選擇按鈕事件 -> 直接進入領養確認畫面 (已移除問答)
     const langButtons = document.querySelectorAll('.lang-btn');
     langButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const lang = btn.dataset.lang;
         this.sfx.playClickSound();
         this.setLanguage(lang);
-        if (lang === 'zh') {
-          this.goToEasterEgg();
-        } else {
-          this.goToAdopt();
-        }
+        this.goToAdopt();
       });
     });
 
