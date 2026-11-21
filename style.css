@@ -1105,7 +1105,7 @@ html, body {
       box-shadow: 0 2px 0 #1a1a1a;
     }
 
-    /* 窗台上的黃色小鴨 (還原最新參考圖：滿色金黃小鴨) */
+    /* 窗台上的黃色小鴨 (還原最新參考圖) */
     .window-rubber-duck {
       position: absolute;
       top: 10%;
@@ -1114,7 +1114,7 @@ html, body {
       height: auto;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
-      z-index: 20;
+      z-index: 6;
       filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.22));
       cursor: pointer;
       transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1339,6 +1339,39 @@ html, body {
 }
 
 /* 句子選擇標籤頁 */
+.voice-selector-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.voice-select-label {
+  font-family: 'DotGothic16', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.voice-phrase-dropdown {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  background: #f8fafc;
+  color: #1e293b;
+  border: 2px solid #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+}
+
+.voice-phrase-dropdown:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
 .voice-selector-tabs {
   display: flex;
   gap: 8px;
@@ -1676,6 +1709,72 @@ html, body {
   pointer-events: auto;
   cursor: pointer;
   z-index: 10;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+/* 鯊魚各狀態圖像（難過臉、變方各階段） */
+.room-shark-stage-img {
+  position: absolute;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.room-shark-stage-img.hidden {
+  display: none !important;
+}
+
+/* 難過失落小鯊魚 (結局 3 第 7 句) */
+.room-shark-stage-img.stage-disappointed {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  z-index: 12;
+}
+
+/* 變胖第 1 階段：微胖小鯊魚 (第 3 顆蘋果) */
+.room-shark-stage-img.stage-chubby {
+  left: -20%;
+  bottom: -4%;
+  width: 140%;
+  height: auto;
+  z-index: 14;
+}
+
+/* 變胖第 2 階段：卡住的小鯊魚 (第 4 顆蘋果) */
+.room-shark-stage-img.stage-stuck {
+  left: -32%;
+  bottom: -4%;
+  width: 165%;
+  height: auto;
+  z-index: 15;
+}
+
+/* 變胖第 3 階段：方塊化小鯊魚 (第 5 顆蘋果) */
+.room-shark-stage-img.stage-square {
+  left: -48%;
+  bottom: -5%;
+  width: 200%;
+  height: auto;
+  z-index: 16;
+}
+
+/* 變胖第 4 階段：全景方形大方塊 (第 6 顆蘋果) */
+.room-shark-stage-img.stage-full {
+  left: -65%;
+  bottom: -6%;
+  width: 235%;
+  height: auto;
+  z-index: 17;
+}
+
+/* 鯊魚離家出走動畫 (結局 3) */
+.room-shark-walkout {
+  transform: translateX(-140vw) rotate(-8deg) !important;
+  opacity: 0 !important;
+  transition: all 1.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
                   /* 愛心飄起特效 */

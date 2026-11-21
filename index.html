@@ -146,11 +146,11 @@
     </div>
   </section>
 
-  <!-- 結局 11 畫面 (Ending 11 Screen) -->
+  <!-- 結局畫面 (Ending Screen，支援 1 胖胖鯊 / 3 流浪的鯊魚 / 11 自在) -->
   <section id="ending-screen" class="screen">
     <div class="ending-container">
       <div class="ending-card">
-        <img src="assets/ending_11.jpg" alt="結局 11: 一個人也很自在" class="ending-img" />
+        <img id="ending-img" src="assets/ending_11.jpg" alt="通關結局" class="ending-img" />
       </div>
       <div class="ending-actions">
         <button id="btn-restart-from-ending" class="pixel-choice-btn btn-restart">
@@ -214,15 +214,21 @@
           </div>
         </div>
 
+        <!-- 窗台上的黃色小鴨 (還原最新參考圖：滿色金黃小鴨) -->
+        <img id="window-rubber-duck" src="assets/rubber_duck_transparent.png?v=yellow_duck_v5" alt="黃色小鴨" class="window-rubber-duck" title="呱呱！" />
+
         <!-- 房間本體背景圖 (窗戶已鏤空，露出後方動態雲) -->
         <img src="assets/room_cozy_cutout.png?v=clean_v4" alt="小鯊魚的房間" class="room-background" />
-
-        <!-- 窗台上的黃色小鴨 (全新獨立金黃色圖檔，突破所有手機快取限制，位於背景前景層) -->
-        <img id="window-rubber-duck" src="assets/window_rubber_duck_v6.png?v=gold_v6" alt="黃色小鴨" class="window-rubber-duck" title="呱呱！" />
 
         <!-- 互動小鯊魚表情反應用圖層 (精確重疊在墊子上的小鯊魚位置) -->
         <div id="room-shark" class="room-shark-layer">
           <img id="room-shark-talk" src="assets/shark_talk_transparent.png?v=clean_v6" alt="說話小鯊魚" class="room-shark-talk hidden" />
+          <img id="room-shark-disappointed" src="assets/shark_disappointed.png?v=sad_v2" alt="難過小鯊魚" class="room-shark-stage-img stage-disappointed hidden" />
+          <img id="room-shark-stage-1" src="assets/shark_stage_chubby.png?v=stage_1" alt="微胖小鯊魚" class="room-shark-stage-img stage-chubby hidden" />
+          <img id="room-shark-stage-2" src="assets/shark_stage_stuck.png?v=stage_2" alt="卡住小鯊魚" class="room-shark-stage-img stage-stuck hidden" />
+          <img id="room-shark-stage-3" src="assets/shark_stage_square.png?v=stage_3" alt="方形小鯊魚" class="room-shark-stage-img stage-square hidden" />
+          <img id="room-shark-stage-4" src="assets/shark_stage_full.png?v=stage_4" alt="超大方塊小鯊魚" class="room-shark-stage-img stage-full hidden" />
+
           <!-- 說話台詞文字氣泡 (還原參考圖「你好！」) -->
           <div id="shark-speech-bubble" class="shark-speech-bubble hidden">
             <span class="speech-text" id="txt-shark-speech">你好！</span>
@@ -294,7 +300,38 @@
         <button id="btn-close-modal" class="modal-close-btn" title="關閉">✕</button>
       </div>
 
-      <!-- 句子選擇標籤頁 (共四句配音) -->
+      <!-- 句子選擇器 (支援全部 18 句台詞：常用開場、結局 3 飢餓流浪全 10 句、結局 1 變方台詞) -->
+      <div class="voice-selector-box">
+        <label for="voice-phrase-select" class="voice-select-label">選擇要錄製或替換的台詞：</label>
+        <select id="voice-phrase-select" class="voice-phrase-dropdown">
+          <optgroup label="🌟 常用開場台詞">
+            <option value="hello">①「你好！」</option>
+            <option value="want_apple">②「我想吃蘋果！」</option>
+            <option value="pick_fish">③「對對就是那個」</option>
+          </optgroup>
+          <optgroup label="🍎 結局 3：飢餓流浪台詞 (地上有蘋果一直不餵)">
+            <option value="give_me" selected>④「可以給我蘋果嗎？」</option>
+            <option value="starve_2">⑤「拜託？」</option>
+            <option value="starve_3">⑥「我聞到甜甜的香味了」</option>
+            <option value="starve_4">⑦「好餓喔」</option>
+            <option value="starve_5">⑧「明明蘋果就在那麼近的地方」</option>
+            <option value="starve_6">⑨「可以幫幫我嗎？」</option>
+            <option value="starve_7">⑩「莫非其實你討厭我？」(難過臉)</option>
+            <option value="starve_8">⑪「養一個寵物那麼難嗎？」(鎖定不可餵食)</option>
+            <option value="starve_9">⑫「好餓，快餓死了」</option>
+            <option value="starve_10">⑬「蘋果是屬於你的，我吃不到（嘆氣）我要出門找食物去了」(離家出走)</option>
+          </optgroup>
+          <optgroup label="🟩 結局 1：吃蘋果變方台詞">
+            <option value="eat_2">⑭「鯊魚應該吃魚肉？」(第 2 顆蘋果)</option>
+            <option value="eat_3">⑮「鯊魚吃蘋果也很正常」(第 3 顆蘋果)</option>
+            <option value="eat_4">⑯「好像身體卡住了」(第 4 顆蘋果)</option>
+            <option value="eat_5">⑰「它變得越來越方了」(第 5 顆蘋果)</option>
+            <option value="eat_6">⑱「我怎麼…」(第 6 顆蘋果)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- 快捷常用標籤頁 (共四句配音) -->
       <div class="voice-selector-tabs">
         <button id="tab-voice-hello" class="voice-tab" data-id="hello">
           <span>①「你好！」</span>
@@ -309,7 +346,7 @@
           <span class="tab-badge" id="badge-fish">已錄製 ✓</span>
         </button>
         <button id="tab-voice-give" class="voice-tab active" data-id="give_me">
-          <span>④「可以給我嗎？」</span>
+          <span>④「可以給我蘋果嗎？」</span>
           <span class="tab-badge" id="badge-give">待錄製 🎙️</span>
         </button>
       </div>

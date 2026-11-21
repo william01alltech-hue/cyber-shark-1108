@@ -354,6 +354,12 @@ class SceneManager {
     this.applesEatenCount = 0;
     this.isFromRoomFeeding = false;
 
+    // 飢餓計時器與結局 3 / 結局 1 形態狀態
+    this.starveTimer = null;
+    this.starveStep = 0;
+    this.isFeedingLocked = false;
+    this.currentSharkStage = null; // null | 'disappointed' | 1 | 2 | 3 | 4
+
     // 清理舊版遺留的錯誤快取，確保「你好！」使用作者正確錄音
     try {
       localStorage.removeItem('shark_voice_hello');
@@ -458,6 +464,17 @@ class SceneManager {
 
   goToLangSelect() {
     if (this.splashTimeout) clearTimeout(this.splashTimeout);
+    this.clearStarveTimer();
+    this.isFeedingLocked = false;
+    this.applesEatenCount = 0;
+    this.currentSharkStage = null;
+    const roomShark = document.getElementById('room-shark');
+    if (roomShark) {
+      roomShark.classList.remove('room-shark-walkout');
+      roomShark.style.transform = '';
+      roomShark.style.opacity = '1';
+    }
+    this.showSharkStage('normal');
     this.switchScreen('lang');
   }
 
@@ -485,6 +502,7 @@ class SceneManager {
 
   // 第 2 個小彩蛋問答畫面 (Care you ! Yu care ! 是誰的口號？)
   goToEasterEgg2() {
+    this.isFromRoomFeeding = true;
     const feedback = document.getElementById('easter2-feedback');
     if (feedback) {
       feedback.classList.add('hidden');
@@ -520,8 +538,22 @@ class SceneManager {
     this.switchScreen('adopt');
   }
 
-  goToEnding() {
+  // 支援多結局畫面 (結局 1 胖胖鯊 / 結局 3 流浪的鯊魚 / 結局 11 一個人也很自在)
+  goToEnding(endingId = 11) {
     this.sfx.playEndingJingle();
+    const endingImg = document.getElementById('ending-img');
+    if (endingImg) {
+      if (endingId === 1) {
+        endingImg.src = 'assets/ending_1.jpg?v=' + Date.now();
+        endingImg.alt = '你通關啦！ 結局 1 胖胖鯊';
+      } else if (endingId === 3) {
+        endingImg.src = 'assets/ending_3.jpg?v=' + Date.now();
+        endingImg.alt = '你通關啦！ 結局 3 流浪的鯊魚';
+      } else {
+        endingImg.src = 'assets/ending_11.jpg?v=' + Date.now();
+        endingImg.alt = '結局 11: 一個人也很自在';
+      }
+    }
     this.switchScreen('ending');
   }
 
@@ -529,10 +561,46 @@ class SceneManager {
     this.switchScreen('menu');
   }
 
+  // 切換小鯊魚房間內的形狀狀態
+  showSharkStage(stage) {
+    this.currentSharkStage = stage;
+    const stageDisappointed = document.getElementById('room-shark-disappointed');
+    const stage1 = document.getElementById('room-shark-stage-1');
+    const stage2 = document.getElementById('room-shark-stage-2');
+    const stage3 = document.getElementById('room-shark-stage-3');
+    const stage4 = document.getElementById('room-shark-stage-4');
+
+    const allStages = [stageDisappointed, stage1, stage2, stage3, stage4];
+    allStages.forEach(el => { if (el) el.classList.add('hidden'); });
+
+    if (stage === 'disappointed' && stageDisappointed) {
+      stageDisappointed.classList.remove('hidden');
+    } else if ((stage === 1 || stage === 'chubby') && stage1) {
+      stage1.classList.remove('hidden');
+    } else if ((stage === 2 || stage === 'stuck') && stage2) {
+      stage2.classList.remove('hidden');
+    } else if ((stage === 3 || stage === 'square') && stage3) {
+      stage3.classList.remove('hidden');
+    } else if ((stage === 4 || stage === 'full') && stage4) {
+      stage4.classList.remove('hidden');
+    }
+  }
+
   goToRoom() {
     this.switchScreen('game');
 
-    // 進入房間後的標準對話流程：
+    // 若小鯊魚有變形狀態，恢復目前形狀
+    if (this.currentSharkStage) {
+      this.showSharkStage(this.currentSharkStage);
+    }
+
+    // 若是從房間吃蘋果問答回來的，不重複打招呼
+    if (this.isFromRoomFeeding) {
+      this.isFromRoomFeeding = false;
+      return;
+    }
+
+    // 首次進入房間後的標準對話流程：
     // 1. 一開始跟玩家說「你好！」
     // 2. 說完「你好！」之後，接著說「我想吃蘋果！」
     setTimeout(() => {
@@ -548,7 +616,7 @@ class SceneManager {
     this.switchScreen('outdoor');
   }
 
-  // 小鯊魚開口說話動畫與聲音播放 (支援「你好！」、「我想吃蘋果」、「對對就是那個」)
+  // 小鯊魚開口說話動畫與聲音播放 (支援完整 18 句台詞、語音錄音與 TTS 智能朗讀)
   playSharkGreeting(targetVoiceId = 'hello', onFinished = null) {
     const talkSprite = document.getElementById('room-shark-talk');
     const bubble = document.getElementById('shark-speech-bubble');
@@ -580,10 +648,102 @@ class SceneManager {
         file: 'assets/shark_pick_fish.wav'
       },
       give_me: {
-        zh: '可以給我嗎？',
-        ja: 'もらえる？',
-        en: 'Can I have it?',
+        zh: '可以給我蘋果嗎？',
+        ja: 'リンゴをくれる？',
+        en: 'Can you give me the apple?',
         file: 'assets/shark_give_me.wav'
+      },
+      // 結局 3：飢餓流浪台詞 (地上有蘋果一直不餵)
+      starve_1: {
+        zh: '可以給我蘋果嗎？',
+        ja: 'リンゴをくれる？',
+        en: 'Can you give me the apple?',
+        file: 'assets/shark_give_me.wav'
+      },
+      starve_2: {
+        zh: '拜託？',
+        ja: 'お願い？',
+        en: 'Please?',
+        file: null
+      },
+      starve_3: {
+        zh: '我聞到甜甜的香味了',
+        ja: '甘い香りがしてきたよ',
+        en: 'I smell a sweet scent...',
+        file: null
+      },
+      starve_4: {
+        zh: '好餓喔',
+        ja: 'お腹すいたな',
+        en: 'So hungry...',
+        file: null
+      },
+      starve_5: {
+        zh: '明明蘋果就在那麼近的地方',
+        ja: 'リンゴがこんなに近くにあるのに',
+        en: 'The apple is right there...',
+        file: null
+      },
+      starve_6: {
+        zh: '可以幫幫我嗎？',
+        ja: '助けてくれる？',
+        en: 'Can you help me?',
+        file: null
+      },
+      starve_7: {
+        zh: '莫非其實你討厭我？',
+        ja: 'もしかして私のこと嫌い？',
+        en: 'Could it be that you hate me?',
+        file: null
+      },
+      starve_8: {
+        zh: '養一個寵物那麼難嗎？',
+        ja: 'ペットを飼うのってそんなに大変？',
+        en: 'Is keeping a pet that hard?',
+        file: null
+      },
+      starve_9: {
+        zh: '好餓，快餓死了',
+        ja: 'お腹すいた、死んじゃいそう',
+        en: 'So hungry, starving to death...',
+        file: null
+      },
+      starve_10: {
+        zh: '蘋果是屬於你的，我吃不到（嘆氣）我要出門找食物去了',
+        ja: 'リンゴはあなたのもの、私には食べられない（ため息）食べ物を探しに出ていくね',
+        en: 'The apple is yours, I cannot eat it (sigh) I will go outside to find food...',
+        file: null
+      },
+      // 結局 1：吃蘋果變方台詞
+      eat_2: {
+        zh: '鯊魚應該吃魚肉？',
+        ja: 'サメは魚を食べるべき？',
+        en: 'Should sharks eat fish?',
+        file: null
+      },
+      eat_3: {
+        zh: '鯊魚吃蘋果也很正常',
+        ja: 'サメがリンゴを食べるのも普通だよ',
+        en: 'It is normal for sharks to eat apples too.',
+        file: null
+      },
+      eat_4: {
+        zh: '好像身體卡住了',
+        ja: '体が引っかかっちゃったみたい',
+        en: 'Looks like my body is stuck.',
+        file: null
+      },
+      eat_5: {
+        zh: '它變得越來越方了',
+        ja: 'どんどん四角くなってきた',
+        en: 'It is getting more and more square.',
+        file: null
+      },
+      eat_6: {
+        zh: '我怎麼…',
+        ja: '私どうして…',
+        en: 'How did I...',
+        file: null
       }
     };
 
@@ -608,19 +768,31 @@ class SceneManager {
       setTimeout(() => {
         bubble.classList.add('hidden');
         if (bottomPrompt) {
-          bottomPrompt.textContent = '給它吃蘋果吧';
+          bottomPrompt.textContent = this.isFeedingLocked ? '鯊魚已經出門了…' : '給它吃蘋果吧';
         }
         if (typeof onFinished === 'function') onFinished();
       }, 350);
     };
 
-    // 1. 優先使用 Web Audio API 解碼 Buffer 播放 (手機 iOS/Android 最穩定、不受 setTimeout 與 Autoplay 限制！)
+    // 1. 優先檢查使用者是否有自行錄製或上傳的自訂語音 (localStorage)
+    const savedAudioData = localStorage.getItem('shark_voice_' + voiceId);
+    if (savedAudioData) {
+      const audioMem = new Audio(savedAudioData);
+      audioMem.onended = finishTalking;
+      audioMem.play().catch(() => {
+        this.speakWithTTS(lineText, finishTalking);
+      });
+      setTimeout(() => { if (!hasEnded) finishTalking(); }, 4000);
+      return;
+    }
+
+    // 2. 優先使用 Web Audio API 解碼 Buffer 播放
     if (this.sfx.buffers[voiceId]) {
       const played = this.sfx.playBuffer(voiceId, finishTalking);
       if (played) return;
     }
 
-    // 2. 若 Buffer 正在下載或尚未載入，使用預熱好的 Audio 池播放
+    // 3. 若 Buffer 正在下載或尚未載入，使用預熱好的 Audio 池播放
     const pooledAudio = this.audioPool && this.audioPool[voiceId];
     if (pooledAudio) {
       pooledAudio.currentTime = 0;
@@ -628,55 +800,101 @@ class SceneManager {
       const playPromise = pooledAudio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          this.playFallbackVoice(voiceId, finishTalking);
+          this.playFallbackVoice(voiceId, finishTalking, lineText);
         });
       }
       return;
     }
 
-    // 3. 一般 Audio 嘗試
-    const audioDisk = new Audio(currentLine.file + '?v=' + Date.now());
-    let hasPlayed = false;
+    // 4. 若有實體音檔，嘗試載入播放
+    if (currentLine.file) {
+      const audioDisk = new Audio(currentLine.file + '?v=' + Date.now());
+      let hasPlayed = false;
 
-    const tryPlay = () => {
-      if (hasPlayed || hasEnded) return;
-      hasPlayed = true;
-      audioDisk.play().catch(() => {
-        this.playFallbackVoice(voiceId, finishTalking);
-      });
-    };
+      const tryPlay = () => {
+        if (hasPlayed || hasEnded) return;
+        hasPlayed = true;
+        audioDisk.play().catch(() => {
+          this.playFallbackVoice(voiceId, finishTalking, lineText);
+        });
+      };
 
-    audioDisk.oncanplaythrough = tryPlay;
-    audioDisk.onloadeddata = tryPlay;
-    tryPlay();
+      audioDisk.oncanplaythrough = tryPlay;
+      audioDisk.onloadeddata = tryPlay;
+      tryPlay();
 
-    audioDisk.onended = finishTalking;
+      audioDisk.onended = finishTalking;
 
-    audioDisk.onerror = () => {
-      if (!hasEnded) {
-        this.playFallbackVoice(voiceId, finishTalking);
-      }
-    };
+      audioDisk.onerror = () => {
+        if (!hasEnded) {
+          this.playFallbackVoice(voiceId, finishTalking, lineText);
+        }
+      };
 
-    // 保底計時器防止音檔事件被瀏覽器靜音阻塞
-    setTimeout(() => {
-      if (!hasEnded) finishTalking();
-    }, 3200);
+      setTimeout(() => {
+        if (!hasEnded) finishTalking();
+      }, 3500);
+      return;
+    }
+
+    // 5. 若無預設音檔，使用 Web Speech API 或語音合成可愛朗讀！
+    this.playFallbackVoice(voiceId, finishTalking, lineText);
   }
 
-  playFallbackVoice(voiceId, onEnd) {
+  playFallbackVoice(voiceId, onEnd, lineText = '') {
     const savedAudioData = localStorage.getItem('shark_voice_' + voiceId);
     if (savedAudioData) {
       const audioMem = new Audio(savedAudioData);
       audioMem.onended = onEnd;
       audioMem.play().catch(() => {
-        this.sfx.playDefaultGreetingSound();
-        setTimeout(onEnd, 1200);
+        this.speakWithTTS(lineText, onEnd);
       });
-      setTimeout(onEnd, 2200);
-    } else {
+      setTimeout(onEnd, 3500);
+      return;
+    }
+
+    if (lineText && 'speechSynthesis' in window) {
+      this.speakWithTTS(lineText, onEnd);
+      return;
+    }
+
+    this.sfx.playDefaultGreetingSound();
+    setTimeout(onEnd, 1000);
+  }
+
+  // 可愛童音語音合成（適用於未錄製的台詞，保證每句都有生動聲音）
+  speakWithTTS(text, onEnd) {
+    if (!('speechSynthesis' in window) || !text) {
       this.sfx.playDefaultGreetingSound();
-      setTimeout(onEnd, 1000);
+      if (typeof onEnd === 'function') setTimeout(onEnd, 800);
+      return;
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.1;
+      utterance.pitch = 1.35; // 高萌小鯊魚音調
+      if (this.currentLang === 'zh') utterance.lang = 'zh-TW';
+      else if (this.currentLang === 'ja') utterance.lang = 'ja-JP';
+      else utterance.lang = 'en-US';
+
+      let ended = false;
+      const done = () => {
+        if (ended) return;
+        ended = true;
+        if (typeof onEnd === 'function') onEnd();
+      };
+
+      utterance.onend = done;
+      utterance.onerror = done;
+      setTimeout(done, 3800);
+
+      this.sfx.playSlideSound(1.3);
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      this.sfx.playDefaultGreetingSound();
+      if (typeof onEnd === 'function') setTimeout(onEnd, 800);
     }
   }
 
@@ -704,25 +922,44 @@ class SceneManager {
 
     if (!modal) return;
 
+    const phraseMap = {
+      hello: '你好！',
+      want_apple: '我想吃蘋果！',
+      pick_fish: '對對就是那個',
+      give_me: '可以給我蘋果嗎？',
+      starve_1: '可以給我蘋果嗎？',
+      starve_2: '拜託？',
+      starve_3: '我聞到甜甜的香味了',
+      starve_4: '好餓喔',
+      starve_5: '明明蘋果就在那麼近的地方',
+      starve_6: '可以幫幫我嗎？',
+      starve_7: '莫非其實你討厭我？',
+      starve_8: '養一個寵物那麼難嗎？',
+      starve_9: '好餓，快餓死了',
+      starve_10: '蘋果是屬於你的，我吃不到（嘆氣）我要出門找食物去了',
+      eat_2: '鯊魚應該吃魚肉？',
+      eat_3: '鯊魚吃蘋果也很正常',
+      eat_4: '好像身體卡住了',
+      eat_5: '它變得越來越方了',
+      eat_6: '我怎麼…'
+    };
+
+    const phraseSelect = document.getElementById('voice-phrase-select');
+
     const updateTabUI = () => {
       [tabHello, tabApple, tabFish, tabGive].forEach((t) => t && t.classList.remove('active'));
 
-      if (this.currentVoiceId === 'hello') {
-        tabHello && tabHello.classList.add('active');
-        modalDesc.innerHTML = '台詞 1：用自己的聲音說「<strong>你好！</strong>」';
-        statusTip.textContent = '點擊「開始錄音」後，請清晰說出：「你好！」';
-      } else if (this.currentVoiceId === 'want_apple') {
-        tabApple && tabApple.classList.add('active');
-        modalDesc.innerHTML = '台詞 2：用自己的聲音說「<strong>我想吃蘋果</strong>」！';
-        statusTip.textContent = '點擊「開始錄音」後，請清晰說出：「我想吃蘋果」';
-      } else if (this.currentVoiceId === 'pick_fish') {
-        tabFish && tabFish.classList.add('active');
-        modalDesc.innerHTML = '台詞 3（拿起蘋果時說）：用自己的聲音說「<strong>對對就是那個</strong>」！';
-        statusTip.textContent = '點擊「開始錄音」後，請清晰說出：「對對就是那個」';
-      } else {
-        tabGive && tabGive.classList.add('active');
-        modalDesc.innerHTML = '台詞 4（緊接在第三句後）：用自己的聲音說「<strong>可以給我嗎？</strong>」！';
-        statusTip.textContent = '點擊「開始錄音」後，請清晰說出：「可以給我嗎？」';
+      if (this.currentVoiceId === 'hello' && tabHello) tabHello.classList.add('active');
+      else if (this.currentVoiceId === 'want_apple' && tabApple) tabApple.classList.add('active');
+      else if (this.currentVoiceId === 'pick_fish' && tabFish) tabFish.classList.add('active');
+      else if ((this.currentVoiceId === 'give_me' || this.currentVoiceId === 'starve_1') && tabGive) tabGive.classList.add('active');
+
+      const phraseName = phraseMap[this.currentVoiceId] || '自訂語音';
+      modalDesc.innerHTML = `當前錄製：用自己的聲音說「<strong>${phraseName}</strong>」！`;
+      statusTip.textContent = `點擊「開始錄音」後，請清晰說出：「${phraseName}」`;
+
+      if (phraseSelect) {
+        phraseSelect.value = this.currentVoiceId;
       }
 
       // 檢查目前標籤是否已有錄音
@@ -730,6 +967,14 @@ class SceneManager {
       btnPlayRec.disabled = !hasVoice && !this.recordedAudioUrl;
       btnSaveRec.disabled = !this.recordedAudioBlob;
     };
+
+    if (phraseSelect) {
+      phraseSelect.addEventListener('change', () => {
+        this.currentVoiceId = phraseSelect.value;
+        this.sfx.playClickSound();
+        updateTabUI();
+      });
+    }
 
     if (tabHello) {
       tabHello.addEventListener('click', () => {
@@ -759,6 +1004,24 @@ class SceneManager {
       tabGive.addEventListener('click', () => {
         this.currentVoiceId = 'give_me';
         this.sfx.playClickSound();
+        updateTabUI();
+      });
+    }
+
+    // 快捷鍵 'R' 或 'V' 開啟錄音面板
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'r' || e.key === 'R' || e.key === 'v' || e.key === 'V') && this.currentScreen === 'game') {
+        modal.classList.remove('hidden');
+        updateTabUI();
+      }
+    });
+
+    // 雙擊聲音按鈕開啟錄音面板
+    const btnSound = document.getElementById('btn-sound-toggle');
+    if (btnSound) {
+      btnSound.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        modal.classList.remove('hidden');
         updateTabUI();
       });
     }
@@ -987,6 +1250,8 @@ class SceneManager {
           posY = floorY;
           apple.style.top = `${posY}px`;
           this.makeAppleInteractable(apple, viewport);
+          // 蘋果掉在地上，若玩家不餵，啟動飢餓離家出走計時器 (結局 3)
+          this.startStarveTimer();
           return;
         }
       }
@@ -998,6 +1263,69 @@ class SceneManager {
     requestAnimationFrame(fallLoop);
   }
 
+  // 結局 3：飢餓計時器邏輯 (把蘋果放在地上一直不餵他，觸發 10 句飢餓台詞與離家出走結局)
+  startStarveTimer() {
+    this.clearStarveTimer();
+    if (this.isFeedingLocked) return;
+    this.starveStep = 0;
+
+    const starveSteps = [
+      { id: 'starve_1', delay: 4000 },
+      { id: 'starve_2', delay: 4500 },
+      { id: 'starve_3', delay: 4500 },
+      { id: 'starve_4', delay: 4500 },
+      { id: 'starve_5', delay: 4500 },
+      { id: 'starve_6', delay: 4500 },
+      { id: 'starve_7', delay: 4500, onStep: () => {
+        // 第 7 句「莫非其實你討厭我？」：表情切換為難過失落臉
+        this.showSharkStage('disappointed');
+      }},
+      { id: 'starve_8', delay: 4500, onStep: () => {
+        // 第 8 句「養一個寵物那麼難嗎？」：正式鎖定不可再餵食！
+        this.isFeedingLocked = true;
+      }},
+      { id: 'starve_9', delay: 4500 },
+      { id: 'starve_10', delay: 4500, onStep: () => {
+        this.isFeedingLocked = true;
+      }, onDone: () => {
+        // 說完第 10 句「我要出門找食物去了」：小鯊魚離家出走，獲得結局 3「流浪的鯊魚」
+        const roomShark = document.getElementById('room-shark');
+        if (roomShark) {
+          roomShark.classList.add('room-shark-walkout');
+        }
+        setTimeout(() => {
+          this.goToEnding(3);
+        }, 1800);
+      }}
+    ];
+
+    const runNext = () => {
+      if (this.starveStep >= starveSteps.length) return;
+      const cur = starveSteps[this.starveStep];
+      this.starveStep++;
+
+      this.starveTimer = setTimeout(() => {
+        if (cur.onStep) cur.onStep();
+        this.playSharkGreeting(cur.id, () => {
+          if (cur.onDone) {
+            cur.onDone();
+          } else {
+            runNext();
+          }
+        });
+      }, cur.delay);
+    };
+
+    runNext();
+  }
+
+  clearStarveTimer() {
+    if (this.starveTimer) {
+      clearTimeout(this.starveTimer);
+      this.starveTimer = null;
+    }
+  }
+
   // 讓掉在地上的蘋果可供玩家「拿起」與「餵食」(支援手機觸控拖拽、點擊餵食與點擊小鯊魚餵食)
   makeAppleInteractable(apple, viewport) {
     let isDragging = false;
@@ -1007,6 +1335,7 @@ class SceneManager {
     apple.style.touchAction = 'none';
 
     const onPointerDown = (e) => {
+      if (this.isFeedingLocked) return;
       e.stopPropagation();
       isDragging = true;
       startPointerX = e.clientX;
@@ -1016,7 +1345,10 @@ class SceneManager {
         apple.setPointerCapture(e.pointerId);
       } catch (err) {}
 
-      // 玩家拿起蘋果的瞬間：先說第三句「對對就是那個」，緊接著說第四句「可以給我嗎？」！
+      // 玩家拿起蘋果時暫停飢餓計時器
+      this.clearStarveTimer();
+
+      // 玩家拿起蘋果的瞬間：先說第三句「對對就是那個」，緊接著說第四句「可以給我蘋果嗎？」！
       if (!hasSaidQuote) {
         hasSaidQuote = true;
         this.playSharkGreeting('pick_fish', () => {
@@ -1048,6 +1380,8 @@ class SceneManager {
       } catch (err) {}
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+
+      if (this.isFeedingLocked) return;
 
       const vpRect = viewport.getBoundingClientRect();
       const curX = e.clientX - vpRect.left;
@@ -1084,6 +1418,9 @@ class SceneManager {
         // 餵食成功
         apple.remove();
         this.sharkEatApple();
+      } else {
+        // 蘋果放回地上，重啟飢餓計時器
+        this.startStarveTimer();
       }
     };
 
@@ -1094,6 +1431,7 @@ class SceneManager {
     if (roomShark && !roomShark._hasAppleFeedListener) {
       roomShark._hasAppleFeedListener = true;
       roomShark.addEventListener('click', () => {
+        if (this.isFeedingLocked) return;
         const existingApple = document.querySelector('.falling-apple');
         if (existingApple) {
           existingApple.remove();
@@ -1103,8 +1441,10 @@ class SceneManager {
     }
   }
 
-  // 鯊魚吃掉蘋果的反應：只要把嘴巴張開一點點吃下，無多餘特效
+  // 鯊魚吃掉蘋果的反應與變形 (結局 1：胖胖鯊 / 方形鯊魚)
   sharkEatApple() {
+    if (this.isFeedingLocked) return;
+    this.clearStarveTimer();
     this.sfx.playEatSound();
     this.applesEatenCount++;
 
@@ -1116,16 +1456,52 @@ class SceneManager {
       }, 420);
     }
 
-    // 只要有吃到蘋果，都會彈出林于凱問句，二個問句輪流呈現：
-    // 第 1、3、5 次（奇數）：問句「Care you ! Yu care ! 是誰的口號？」
-    // 第 2、4、6 次（偶數）：問句「于凱有照顧小家庭嗎？」
-    setTimeout(() => {
-      if (this.applesEatenCount % 2 === 1) {
+    // 依據吃蘋果次數進行對話與變形：
+    // 第 1 顆：吃掉，彈出問句 2 ("Care you ! Yu care ! 是誰的口號？")
+    // 第 2 顆：說「鯊魚應該吃魚肉？」，彈出問句 1 ("于凱有照顧小家庭嗎？")
+    // 第 3 顆：說「鯊魚吃蘋果也很正常」，變身為胖胖鯊 (Stage 1)，彈出問句 2
+    // 第 4 顆：說「好像身體卡住了」，變身為卡住小鯊魚 (Stage 2)，彈出問句 1
+    // 第 5 顆：說「它變得越來越方了」，變身為方形小鯊魚 (Stage 3)，彈出問句 2
+    // 第 6 顆：說「我怎麼…」，變身為全景大方塊 (Stage 4)，然後通關進入結局 1「胖胖鯊」！
+    if (this.applesEatenCount === 1) {
+      setTimeout(() => {
         this.goToEasterEgg2();
-      } else {
-        this.goToEasterEgg(true);
-      }
-    }, 850);
+      }, 850);
+    } else if (this.applesEatenCount === 2) {
+      this.playSharkGreeting('eat_2', () => {
+        setTimeout(() => {
+          this.goToEasterEgg(true);
+        }, 500);
+      });
+    } else if (this.applesEatenCount === 3) {
+      this.showSharkStage(1);
+      this.playSharkGreeting('eat_3', () => {
+        setTimeout(() => {
+          this.goToEasterEgg2();
+        }, 500);
+      });
+    } else if (this.applesEatenCount === 4) {
+      this.showSharkStage(2);
+      this.playSharkGreeting('eat_4', () => {
+        setTimeout(() => {
+          this.goToEasterEgg(true);
+        }, 500);
+      });
+    } else if (this.applesEatenCount === 5) {
+      this.showSharkStage(3);
+      this.playSharkGreeting('eat_5', () => {
+        setTimeout(() => {
+          this.goToEasterEgg2();
+        }, 500);
+      });
+    } else if (this.applesEatenCount >= 6) {
+      this.showSharkStage(4);
+      this.playSharkGreeting('eat_6', () => {
+        setTimeout(() => {
+          this.goToEnding(1);
+        }, 1600);
+      });
+    }
   }
 
   // 掉落小魚的物理動畫邏輯 (向下相容)
@@ -1470,7 +1846,10 @@ class SceneManager {
 
     btnSettings.addEventListener('click', () => {
       this.sfx.playClickSound();
-      alert(I18N[this.currentLang].devAlert);
+      const modal = document.getElementById('voice-recorder-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
     });
 
     btnSwitchLang.addEventListener('click', () => {
