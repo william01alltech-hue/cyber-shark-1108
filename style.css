@@ -1205,11 +1205,19 @@ html, body {
       user-select: none;
     }
 
-/* 右上角選單返回鈕 */
+/* 左上角外出按鈕 */
+.top-left-controls {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 20;
+}
+
+/* 右上角聲音控制鈕 (還原官方參考圖位置：獨佔窗戶右上角，徹底避開黃色小鴨) */
 .top-right-controls {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 14px;
+  right: 14px;
   z-index: 20;
   display: flex;
   gap: 8px;
@@ -1892,16 +1900,19 @@ html, body {
     flex-shrink: 0;
   }
 
-  /* 房間右上角控制項置頂，避開手機瀏海與動態島安全區 */
+  /* 房間左上角與右上角控制項置頂，避開手機瀏海與動態島安全區 */
+  .top-left-controls {
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top));
+    left: 12px;
+    z-index: 35;
+  }
+
   .top-right-controls {
     position: absolute;
     top: max(10px, env(safe-area-inset-top));
     right: 12px;
-    gap: 6px;
     z-index: 35;
-    max-width: 82%;
-    flex-wrap: wrap;
-    justify-content: flex-end;
   }
 
   .hud-btn-mini {
