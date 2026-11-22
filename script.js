@@ -118,6 +118,48 @@ class SoundFX {
     });
   }
 
+  // 摘花音效 (清脆向上輕彈的拔起音效)
+  playFlowerPickSound() {
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } catch (e) {}
+  }
+
+  // 戴上花朵音效 (夢幻靈動的琶音閃爍和弦)
+  playFlowerWearSound() {
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const freqs = [1046.5, 1318.5, 1567.98, 2093.0];
+      freqs.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + idx * 0.06);
+        gain.gain.setValueAtTime(0.2, now + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.005, now + idx * 0.06 + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.06);
+        osc.stop(now + idx * 0.06 + 0.26);
+      });
+    } catch (e) {}
+  }
+
   // 吃小魚音效 (清脆的咀嚼/吞下音效)
   playEatSound() {
     this.init();
@@ -368,6 +410,9 @@ class SceneManager {
     // 拒絕點擊計數器
     this.rejectCount = 0;
 
+    // 鯊魚佩戴小花狀態 (戶外摘花放鯊魚頭上)
+    this.isSharkWearingFlower = false;
+
     // 滑動座標陣列 (第 1、2、3、4 次點擊滑動位置)
     this.slideOffsets = [
       { x: 75,  y: -30 },
@@ -588,6 +633,7 @@ class SceneManager {
 
   goToRoom() {
     this.switchScreen('game');
+    this.syncFlowerState();
 
     // 若小鯊魚有變形狀態，恢復目前形狀
     if (this.currentSharkStage) {
@@ -614,6 +660,7 @@ class SceneManager {
 
   goToOutdoor() {
     this.switchScreen('outdoor');
+    this.syncFlowerState();
   }
 
   // 小鯊魚開口說話動畫與聲音播放 (支援完整 18 句台詞、語音錄音與 TTS 智能朗讀)
@@ -1846,6 +1893,180 @@ class SceneManager {
       this.startSplashScreen();
       this.sfx.playLogoJingle();
     });
+
+    // 初始化戶外摘花與佩戴在鯊魚頭上的互動系統
+    this.initFlowerInteraction();
+  }
+
+  // 戶外摘花與佩戴在鯊魚頭上的互動系統
+  initFlowerInteraction() {
+    const flower = document.getElementById('outdoor-flower-container');
+    const sharkWrapper = document.getElementById('outdoor-shark-wrapper');
+    const sharkFlower = document.getElementById('outdoor-shark-flower');
+    const roomSharkFlower = document.getElementById('room-shark-flower');
+    const viewport = document.querySelector('.outdoor-viewport');
+
+    if (!flower || !sharkWrapper) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const onPointerDown = (e) => {
+      if (this.isSharkWearingFlower) return;
+      e.stopPropagation();
+      e.preventDefault();
+      startX = e.clientX;
+      startY = e.clientY;
+      isDragging = false;
+
+      try {
+        flower.setPointerCapture(e.pointerId);
+      } catch (err) {}
+
+      window.addEventListener('pointermove', onPointerMove, { passive: false });
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+    };
+
+    const onPointerMove = (e) => {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!isDragging && (Math.hypot(dx, dy) > 4)) {
+        isDragging = true;
+        this.sfx.playFlowerPickSound();
+        flower.classList.add('picked');
+      }
+
+      if (isDragging && viewport) {
+        e.preventDefault();
+        const vpRect = viewport.getBoundingClientRect();
+        const curX = e.clientX - vpRect.left - flower.offsetWidth / 2;
+        const curY = e.clientY - vpRect.top - flower.offsetHeight / 2;
+        flower.style.left = `${curX}px`;
+        flower.style.top = `${curY}px`;
+
+        // 偵測是否接觸或覆蓋小鯊魚
+        const sharkRect = sharkWrapper.getBoundingClientRect();
+        const flowerRect = flower.getBoundingClientRect();
+        const isOverShark = !(
+          flowerRect.right < sharkRect.left ||
+          flowerRect.left > sharkRect.right ||
+          flowerRect.bottom < sharkRect.top ||
+          flowerRect.top > sharkRect.bottom
+        );
+        sharkWrapper.classList.toggle('shark-drop-target', isOverShark);
+      }
+    };
+
+    const onPointerUp = (e) => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      sharkWrapper.classList.remove('shark-drop-target');
+
+      if (!isDragging) {
+        // 單純點擊花朵：直接摘下並佩戴至小鯊魚頭上！
+        this.sfx.playFlowerPickSound();
+        this.wearFlowerOnShark(true);
+        return;
+      }
+
+      // 拖曳結束：判斷是否落在小鯊魚身上
+      const sharkRect = sharkWrapper.getBoundingClientRect();
+      const flowerRect = flower.getBoundingClientRect();
+      const isOverShark = !(
+        flowerRect.right < sharkRect.left ||
+        flowerRect.left > sharkRect.right ||
+        flowerRect.bottom < sharkRect.top ||
+        flowerRect.top > sharkRect.bottom
+      );
+
+      if (isOverShark) {
+        this.wearFlowerOnShark(false);
+      } else {
+        // 放開在其他位置：彈回草地花莖上
+        flower.classList.remove('picked');
+        flower.style.left = '';
+        flower.style.top = '';
+      }
+    };
+
+    flower.addEventListener('pointerdown', onPointerDown);
+
+    // 點擊小鯊魚頭上的花朵可摘下放回草地花莖
+    const takeOffFlower = (e) => {
+      e.stopPropagation();
+      this.sfx.playFlowerPickSound();
+      this.takeOffFlower();
+    };
+
+    if (sharkFlower) sharkFlower.addEventListener('click', takeOffFlower);
+    if (roomSharkFlower) roomSharkFlower.addEventListener('click', takeOffFlower);
+  }
+
+  // 將花朵佩戴在小鯊魚頭上
+  wearFlowerOnShark(animateFromStem = false) {
+    this.isSharkWearingFlower = true;
+    this.sfx.playFlowerWearSound();
+
+    const flower = document.getElementById('outdoor-flower-container');
+    const sharkImg = document.getElementById('outdoor-shark-img');
+    const speech = document.getElementById('outdoor-shark-speech');
+
+    if (flower) {
+      flower.classList.remove('picked');
+      flower.classList.add('hidden');
+      flower.style.left = '';
+      flower.style.top = '';
+    }
+
+    this.syncFlowerState();
+
+    if (sharkImg) {
+      sharkImg.style.transform = 'scale(1.25) translateY(-16px) rotate(4deg)';
+      setTimeout(() => {
+        sharkImg.style.transform = '';
+      }, 380);
+    }
+
+    if (speech) {
+      speech.classList.remove('hidden');
+      setTimeout(() => {
+        speech.classList.add('hidden');
+      }, 2600);
+    }
+  }
+
+  // 將花朵從鯊魚頭上摘下放回草地花莖
+  takeOffFlower() {
+    this.isSharkWearingFlower = false;
+    const flower = document.getElementById('outdoor-flower-container');
+    if (flower) {
+      flower.classList.remove('hidden', 'picked');
+      flower.style.left = '';
+      flower.style.top = '';
+    }
+    this.syncFlowerState();
+  }
+
+  // 同步房間與戶外小鯊魚戴花狀態
+  syncFlowerState() {
+    const outdoorSharkFlower = document.getElementById('outdoor-shark-flower');
+    const roomSharkFlower = document.getElementById('room-shark-flower');
+    const flower = document.getElementById('outdoor-flower-container');
+
+    if (outdoorSharkFlower) {
+      outdoorSharkFlower.classList.toggle('hidden', !this.isSharkWearingFlower);
+    }
+    if (roomSharkFlower) {
+      roomSharkFlower.classList.toggle('hidden', !this.isSharkWearingFlower);
+    }
+    if (flower) {
+      flower.classList.toggle('hidden', this.isSharkWearingFlower);
+    }
+  }
   }
 }
 

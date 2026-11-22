@@ -1628,6 +1628,72 @@ html, body {
   z-index: 5;
 }
 
+/* 可摘取的戶外大白花 */
+.outdoor-flower-container {
+  position: absolute;
+  left: 69.8%;
+  top: 65.2%;
+  width: 20.8%;
+  aspect-ratio: 174 / 124;
+  z-index: 15;
+  cursor: grab;
+  touch-action: none;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  user-select: none;
+}
+
+.outdoor-flower-container:hover {
+  transform: scale(1.08) translateY(-4px);
+  filter: drop-shadow(0 6px 14px rgba(255, 235, 150, 0.65));
+}
+
+.outdoor-flower-container:active {
+  cursor: grabbing;
+}
+
+.outdoor-flower-container.picked {
+  position: absolute;
+  cursor: grabbing;
+  z-index: 60;
+  pointer-events: auto;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.38));
+  transform: scale(1.18);
+  transition: none;
+}
+
+.outdoor-flower-blossom {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.flower-pick-hint {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 40, 20, 0.85);
+  color: #fff8d6;
+  font-family: 'DotGothic16', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1.5px solid #ffe175;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.outdoor-flower-container:hover .flower-pick-hint {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-3px);
+}
+
 /* 草地上的小鯊魚 */
 .outdoor-shark-wrapper {
   position: absolute;
@@ -1636,7 +1702,13 @@ html, body {
   transform: translateX(-50%);
   width: 18%;
   z-index: 8;
-  pointer-events: none;
+  pointer-events: auto; /* 允許接收花朵放置 */
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.outdoor-shark-wrapper.shark-drop-target {
+  transform: translateX(-50%) scale(1.15);
+  filter: drop-shadow(0 0 16px rgba(255, 230, 100, 0.9));
 }
 
 .outdoor-shark {
@@ -1646,6 +1718,92 @@ html, body {
   image-rendering: crisp-edges;
   animation: outdoorSharkHop 2.4s ease-in-out infinite alternate;
   filter: drop-shadow(0 8px 12px rgba(20, 60, 20, 0.3));
+}
+
+/* 戴在小鯊魚頭上的花朵配件 (戶外) */
+.shark-flower-accessory {
+  position: absolute;
+  top: -12%;
+  left: 8%;
+  width: 48%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform: rotate(-15deg);
+  transform-origin: center bottom;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+  animation: flowerPetalSway 2.4s ease-in-out infinite alternate;
+  transition: transform 0.2s ease;
+}
+
+.shark-flower-accessory:hover {
+  transform: rotate(-15deg) scale(1.18);
+}
+
+@keyframes flowerPetalSway {
+  0% { transform: rotate(-12deg) scale(1); }
+  50% { transform: rotate(-18deg) scale(1.04); }
+  100% { transform: rotate(-14deg) scale(1.02); }
+}
+
+/* 房間內小鯊魚頭戴小花 (延續性) */
+.room-shark-flower-accessory {
+  position: absolute;
+  top: -8%;
+  left: 12%;
+  width: 38%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform: rotate(-12deg);
+  transform-origin: center bottom;
+  z-index: 12;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  animation: flowerPetalSway 2.4s ease-in-out infinite alternate;
+  transition: transform 0.2s ease;
+}
+
+.room-shark-flower-accessory:hover {
+  transform: rotate(-12deg) scale(1.18);
+}
+
+/* 戶外戴花時的台詞氣泡 */
+.outdoor-speech-bubble {
+  position: absolute;
+  top: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 3px solid #205c90;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #103452, 0 8px 16px rgba(0, 0, 0, 0.25);
+  padding: 6px 12px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a4168;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 25;
+  animation: bubblePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.outdoor-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 9px solid #205c90;
 }
 
 @keyframes outdoorSharkHop {

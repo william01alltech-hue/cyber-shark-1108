@@ -10,7 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=duck_clean_v10" />
+  <link rel="stylesheet" href="style.css?v=flower_pick_v11" />
 </head>
 
 <body>
@@ -222,6 +222,8 @@
 
         <!-- 互動小鯊魚表情反應用圖層 (精確重疊在墊子上的小鯊魚位置) -->
         <div id="room-shark" class="room-shark-layer">
+          <!-- 戴在小鯊魚頭上的小白花 (從戶外摘下後同步佩戴) -->
+          <img id="room-shark-flower" src="assets/outdoor_flower_blossom.png?v=flower_v1" alt="頭戴小白花" class="room-shark-flower-accessory hidden" title="🌸 點擊拿下花朵" />
           <img id="room-shark-talk" src="assets/shark_talk_transparent.png?v=pure_blue_v2" alt="說話小鯊魚" class="room-shark-talk hidden" />
           <img id="room-shark-disappointed" src="assets/shark_disappointed.png?v=sad_v2" alt="難過小鯊魚" class="room-shark-stage-img stage-disappointed hidden" />
           <img id="room-shark-stage-1" src="assets/shark_stage_chubby.png?v=stage_1" alt="微胖小鯊魚" class="room-shark-stage-img stage-chubby hidden" />
@@ -281,12 +283,24 @@
         <img src="assets/outdoor_clouds.png" alt="戶外大雲朵" class="outdoor-cloud-img cloud-loop-2" />
       </div>
 
-      <!-- 前景草地、發光花朵與返回小木屋按鈕 -->
-      <img src="assets/outdoor_foreground.png" alt="戶外草地與花" class="outdoor-foreground" />
+      <!-- 前景草地與花莖 -->
+      <img id="outdoor-foreground" src="assets/outdoor_foreground_picked.png?v=flower_v1" alt="戶外草地與花莖" class="outdoor-foreground" />
+
+      <!-- 可摘取的白色花朵 (可拖曳或點擊放小鯊魚頭上) -->
+      <div id="outdoor-flower-container" class="outdoor-flower-container" title="🌸 點擊或拖曳摘花">
+        <img id="outdoor-flower-blossom" src="assets/outdoor_flower_blossom.png?v=flower_v1" alt="白色大花朵" class="outdoor-flower-blossom" />
+        <span class="flower-pick-hint">🌸 點我摘花</span>
+      </div>
 
       <!-- 草地上的小鯊魚 -->
-      <div class="outdoor-shark-wrapper">
-        <img src="assets/shark_transparent.png?v=pure_blue_v2" alt="在草地散步的小鯊魚" class="outdoor-shark" />
+      <div id="outdoor-shark-wrapper" class="outdoor-shark-wrapper" title="草地小鯊魚">
+        <img id="outdoor-shark-img" src="assets/shark_transparent.png?v=pure_blue_v2" alt="在草地散步的小鯊魚" class="outdoor-shark" />
+        <!-- 戴在小鯊魚頭上的花朵 -->
+        <img id="outdoor-shark-flower" src="assets/outdoor_flower_blossom.png?v=flower_v1" alt="頭戴小白花" class="shark-flower-accessory hidden" title="🌸 點擊拿下花朵" />
+        <!-- 戴花時的歡呼愛心文字氣泡 -->
+        <div id="outdoor-shark-speech" class="outdoor-speech-bubble hidden">
+          <span id="txt-outdoor-speech">好漂亮的花！🌸</span>
+        </div>
       </div>
 
       <!-- 左下角點擊回家的房子按鈕 (精確對應參考圖中的小房子位置) -->
@@ -382,7 +396,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=no_quiz_v9"></script>
+  <script src="script.js?v=flower_pick_v11"></script>
 </body>
 
 </html>
