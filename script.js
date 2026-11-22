@@ -2067,7 +2067,6 @@ class SceneManager {
       flower.classList.toggle('hidden', this.isSharkWearingFlower);
     }
   }
-  }
 }
 
 // 頁面載入完成後啟動
