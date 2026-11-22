@@ -1918,15 +1918,6 @@ html, body {
   display: none !important;
 }
 
-/* 難過失落小鯊魚 (結局 3 第 7 句) */
-.room-shark-stage-img.stage-disappointed {
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: auto;
-  z-index: 12;
-}
-
 /* 變胖第 1 階段：微胖小鯊魚 (第 3 顆蘋果) */
 .room-shark-stage-img.stage-chubby {
   left: -20%;

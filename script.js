@@ -400,7 +400,7 @@ class SceneManager {
     this.starveTimer = null;
     this.starveStep = 0;
     this.isFeedingLocked = false;
-    this.currentSharkStage = null; // null | 'disappointed' | 1 | 2 | 3 | 4
+    this.currentSharkStage = null; // null | 1 | 2 | 3 | 4
 
     // 清理舊版遺留的錯誤快取，確保「你好！」使用作者正確錄音
     try {
@@ -610,18 +610,15 @@ class SceneManager {
   // 切換小鯊魚房間內的形狀狀態
   showSharkStage(stage) {
     this.currentSharkStage = stage;
-    const stageDisappointed = document.getElementById('room-shark-disappointed');
     const stage1 = document.getElementById('room-shark-stage-1');
     const stage2 = document.getElementById('room-shark-stage-2');
     const stage3 = document.getElementById('room-shark-stage-3');
     const stage4 = document.getElementById('room-shark-stage-4');
 
-    const allStages = [stageDisappointed, stage1, stage2, stage3, stage4];
+    const allStages = [stage1, stage2, stage3, stage4];
     allStages.forEach(el => { if (el) el.classList.add('hidden'); });
 
-    if (stage === 'disappointed' && stageDisappointed) {
-      stageDisappointed.classList.remove('hidden');
-    } else if ((stage === 1 || stage === 'chubby') && stage1) {
+    if ((stage === 1 || stage === 'chubby') && stage1) {
       stage1.classList.remove('hidden');
     } else if ((stage === 2 || stage === 'stuck') && stage2) {
       stage2.classList.remove('hidden');
@@ -1329,10 +1326,7 @@ class SceneManager {
       { id: 'starve_4', delay: 4500 },
       { id: 'starve_5', delay: 4500 },
       { id: 'starve_6', delay: 4500 },
-      { id: 'starve_7', delay: 4500, onStep: () => {
-        // 第 7 句「莫非其實你討厭我？」：表情切換為難過失落臉
-        this.showSharkStage('disappointed');
-      }},
+      { id: 'starve_7', delay: 4500 },
       { id: 'starve_8', delay: 4500, onStep: () => {
         // 第 8 句「養一個寵物那麼難嗎？」：正式鎖定不可再餵食！
         this.isFeedingLocked = true;
