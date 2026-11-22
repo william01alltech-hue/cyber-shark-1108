@@ -1255,18 +1255,25 @@ html, body {
   background: #fff7e6;
 }
 
-/* 說話與吃東西張嘴小鯊魚圖層 (與坐墊底圖分毫不差精準重合) */
+/* 說話與吃東西張嘴小鯊魚圖層 (預設隱藏，避免雙重重疊) */
 .room-shark-talk {
-  width: 100%;
-  height: auto;
-  display: block;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  filter: none;
+  display: none !important;
 }
 
 .room-shark-talk.hidden {
-  display: none;
+  display: none !important;
+}
+
+/* 小鯊魚說話與吃蘋果時的可愛生動微跳動畫 */
+@keyframes sharkSpeakingBounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-3px) scale(1.02); }
+  50% { transform: translateY(0) scale(0.99); }
+  75% { transform: translateY(-1.5px) scale(1.01); }
+}
+
+.shark-speaking-bounce {
+  animation: sharkSpeakingBounce 0.35s ease-in-out infinite !important;
 }
 
 .shark-speech-bubble {

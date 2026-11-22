@@ -412,6 +412,7 @@ class SceneManager {
 
     // 鯊魚佩戴小花狀態 (戶外摘花放鯊魚頭上)
     this.isSharkWearingFlower = false;
+    this.hasGreetedInRoom = false;
 
     // 滑動座標陣列 (第 1、2、3、4 次點擊滑動位置)
     this.slideOffsets = [
@@ -646,16 +647,17 @@ class SceneManager {
       return;
     }
 
-    // 首次進入房間後的標準對話流程：
-    // 1. 一開始跟玩家說「你好！」
-    // 2. 說完「你好！」之後，接著說「我想吃蘋果！」
-    setTimeout(() => {
-      this.playSharkGreeting('hello', () => {
-        setTimeout(() => {
-          this.playSharkGreeting('want_apple');
-        }, 600);
-      });
-    }, 500);
+    // 首次進入房間後的標準對話流程 (僅在首次進入且未變形時播放，從戶外返回或已變身時不重複打擾)：
+    if (!this.hasGreetedInRoom && !this.currentSharkStage) {
+      this.hasGreetedInRoom = true;
+      setTimeout(() => {
+        this.playSharkGreeting('hello', () => {
+          setTimeout(() => {
+            this.playSharkGreeting('want_apple');
+          }, 600);
+        });
+      }, 500);
+    }
   }
 
   goToOutdoor() {
@@ -665,10 +667,9 @@ class SceneManager {
 
   // 小鯊魚開口說話動畫與聲音播放 (支援完整 18 句台詞、語音錄音與 TTS 智能朗讀)
   playSharkGreeting(targetVoiceId = 'hello', onFinished = null) {
-    const talkSprite = document.getElementById('room-shark-talk');
     const bubble = document.getElementById('shark-speech-bubble');
     const txtSpeech = document.getElementById('txt-shark-speech');
-    if (!talkSprite || !bubble || !txtSpeech) {
+    if (!bubble || !txtSpeech) {
       if (onFinished) onFinished();
       return;
     }
@@ -803,15 +804,20 @@ class SceneManager {
       bottomPrompt.textContent = lineText;
     }
 
-    // 張開嘴巴說話，顯示對話氣泡字幕
-    talkSprite.classList.remove('hidden');
+    // 說話時顯示對話氣泡字幕，並加入生動可愛的微跳動態，不重疊覆蓋第二隻鯊魚圖層
+    const roomShark = document.getElementById('room-shark');
+    if (roomShark) {
+      roomShark.classList.add('shark-speaking-bounce');
+    }
     bubble.classList.remove('hidden');
 
     let hasEnded = false;
     const finishTalking = () => {
       if (hasEnded) return;
       hasEnded = true;
-      talkSprite.classList.add('hidden');
+      if (roomShark) {
+        roomShark.classList.remove('shark-speaking-bounce');
+      }
       setTimeout(() => {
         bubble.classList.add('hidden');
         if (bottomPrompt) {
@@ -1495,12 +1501,12 @@ class SceneManager {
     this.sfx.playEatSound();
     this.applesEatenCount++;
 
-    const talkSprite = document.getElementById('room-shark-talk');
-    if (talkSprite) {
-      talkSprite.classList.remove('hidden');
+    const roomShark = document.getElementById('room-shark');
+    if (roomShark) {
+      roomShark.classList.add('shark-speaking-bounce');
       setTimeout(() => {
-        talkSprite.classList.add('hidden');
-      }, 420);
+        roomShark.classList.remove('shark-speaking-bounce');
+      }, 450);
     }
 
     // 依據吃蘋果次數進行對話與變形 (已移除答題干擾，流暢進行主線互動與結局 1)：
